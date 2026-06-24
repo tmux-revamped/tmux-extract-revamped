@@ -54,6 +54,7 @@ Press `prefix + I`. Requires [fzf](https://github.com/junegunn/fzf) on the path.
 | Option | Default | Meaning |
 |--------|---------|---------|
 | `@extract_revamped_key` | `Tab` | key that opens the picker |
+| `@extract_revamped_navigate_key` | unset | optional key that, instead of pasting, opens copy-mode and searches for the choice so you can read it in context |
 | `@extract_revamped_mode` | `all` | which extractor the picker uses |
 | `@extract_revamped_lines` | `200` | lines of scrollback to capture |
 | `@extract_revamped_popup_width` | `80%` | popup width |

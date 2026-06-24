@@ -46,8 +46,26 @@ extract_all() {
   { extract_urls "${1}"; extract_paths "${1}"; extract_words "${1}"; } | awk 'NF && !seen[$0]++'
 }
 
+# extract_regex_escape STR -> STR with extended-regex metacharacters
+# backslash-escaped, so a selected candidate used as a copy-mode search pattern
+# matches its literal text rather than acting as a regex. Pure bash, so it is
+# identical on every platform.
+extract_regex_escape() {
+  local s="${1}" out="" ch i
+  for (( i = 0; i < ${#s}; i++ )); do
+    ch="${s:i:1}"
+    case "${ch}" in
+      '.' | '\' | '[' | ']' | '(' | ')' | '{' | '}' | '*' | '+' | '?' | '|' | '^' | '$')
+        out+="\\${ch}" ;;
+      *) out+="${ch}" ;;
+    esac
+  done
+  printf '%s' "${out}"
+}
+
 export -f extract_urls
 export -f extract_paths
 export -f extract_words
 export -f extract_lines
 export -f extract_all
+export -f extract_regex_escape

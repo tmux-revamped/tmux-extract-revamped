@@ -44,6 +44,21 @@ teardown() {
   [[ ! -f "${BATS_TEST_TMPDIR}/ins" ]]
 }
 
+@test "extract.sh - navigate action searches the escaped selection" {
+  _fzf() { cat >/dev/null; printf 'a.b(1)*'; }
+  _navigate() { echo "NAV:${1}:${2}" >> "${BATS_TEST_TMPDIR}/nav"; }
+  run main all "%1" navigate
+  [[ ! -f "${BATS_TEST_TMPDIR}/ins" ]]
+  [[ "$(cat "${BATS_TEST_TMPDIR}/nav")" == 'NAV:%1:a\.b\(1\)\*' ]]
+}
+
+@test "extract.sh - navigate seam is callable" {
+  unset _EXTRACT_REVAMPED_LOADED
+  source "${BATS_TEST_DIRNAME}/../../../src/extract.sh"
+  run _navigate "%1" "x"
+  true
+}
+
 @test "extract.sh - host-probe seams are callable" {
   unset _EXTRACT_REVAMPED_LOADED
   source "${BATS_TEST_DIRNAME}/../../../src/extract.sh"

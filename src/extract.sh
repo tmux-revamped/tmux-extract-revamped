@@ -21,6 +21,10 @@ _capture_pane() {
 }
 _fzf() { fzf --no-sort --reverse --height=100%; }
 _insert() { tmux send-keys -t "${1}" -- "${2}"; }
+_navigate() {
+  tmux copy-mode -t "${1}" 2>/dev/null
+  tmux send-keys -t "${1}" -X search-backward "${2}" 2>/dev/null
+}
 
 # _extract_for MODE TEXT -> the candidate list for MODE.
 _extract_for() {
@@ -34,17 +38,21 @@ _extract_for() {
 }
 
 extract_run() {
-  local mode="${1:-all}" target="${2:-}" text items selection
+  local mode="${1:-all}" target="${2:-}" action="${3:-insert}" text items selection
   text="$(_capture_pane "${target}")"
   items="$(_extract_for "${mode}" "${text}")"
   [[ -z "${items}" ]] && return 0
   selection="$(printf '%s\n' "${items}" | _fzf)"
   [[ -z "${selection}" ]] && return 0
-  _insert "${target}" "${selection}"
+  if [[ "${action}" == "navigate" ]]; then
+    _navigate "${target}" "$(extract_regex_escape "${selection}")"
+  else
+    _insert "${target}" "${selection}"
+  fi
 }
 
 main() {
-  extract_run "${1:-all}" "${2:-}"
+  extract_run "${1:-all}" "${2:-}" "${3:-insert}"
 }
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then

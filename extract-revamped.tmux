@@ -23,3 +23,10 @@ width="$(get_opt "@extract_revamped_popup_width" "80%")"
 height="$(get_opt "@extract_revamped_popup_height" "60%")"
 
 tmux bind-key "${key}" display-popup -E -w "${width}" -h "${height}" "${EXTRACT_CMD} ${mode} '#{pane_id}'"
+
+# Optional navigate key: instead of pasting the choice, jump to it in copy-mode
+# so you can read it in context. Opt-in to avoid claiming a second key by default.
+nav_key="$(get_opt "@extract_revamped_navigate_key" "")"
+if [[ -n "${nav_key}" ]]; then
+  tmux bind-key "${nav_key}" display-popup -E -w "${width}" -h "${height}" "${EXTRACT_CMD} ${mode} '#{pane_id}' navigate"
+fi

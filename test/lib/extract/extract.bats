@@ -45,3 +45,11 @@ teardown() {
   [[ "${output}" == *"/path/x"* ]]
   [[ "${output}" == *"word"* ]]
 }
+
+@test "extract_regex_escape escapes metacharacters and leaves text alone" {
+  [[ "$(extract_regex_escape 'plain')" == "plain" ]]
+  [[ "$(extract_regex_escape 'a.b')" == 'a\.b' ]]
+  [[ "$(extract_regex_escape 'a+b*c')" == 'a\+b\*c' ]]
+  [[ "$(extract_regex_escape '/tmp/x(1)')" == '/tmp/x\(1\)' ]]
+  [[ "$(extract_regex_escape 'a|b$')" == 'a\|b\$' ]]
+}
