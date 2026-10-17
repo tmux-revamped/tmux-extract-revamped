@@ -265,3 +265,15 @@ teardown() {
   PATH="${saved}"
   true
 }
+
+@test "extract.sh - _insert sends a key name such as Enter as literal text" {
+  # Arrange
+  source "${BATS_TEST_DIRNAME}/../../../src/extract.sh"
+  tmux() { printf '%s\n' "$@" > "${BATS_TEST_TMPDIR}/tmux_args"; }
+
+  # Act
+  _insert "%1" "Enter"
+
+  # Assert
+  [[ "$(cat "${BATS_TEST_TMPDIR}/tmux_args")" == $'send-keys\n-t\n%1\n-l\n--\nEnter' ]]
+}

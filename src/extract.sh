@@ -55,7 +55,7 @@ _capture_last_log() {
 _fzf() { command -v fzf >/dev/null 2>&1 && fzf "$@"; return 0; }
 
 # _insert TARGET TEXT -> paste TEXT at the pane's cursor.
-_insert() { tmux send-keys -t "${1}" -- "${2}"; }
+_insert() { tmux send-keys -t "${1}" -l -- "${2}"; }
 
 # _navigate TARGET PATTERN -> open copy-mode and search backward for PATTERN.
 _navigate() {
