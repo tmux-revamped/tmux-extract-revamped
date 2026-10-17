@@ -48,3 +48,15 @@ record_tmux() {
   [[ "${1}" == "${PLUGIN_COPY}/src/extract.sh" ]] || false
   [[ "${4}" == "open" ]]
 }
+
+@test "extract-revamped.tmux - the action keys stay unbound by default" {
+  # Arrange
+  tmux() { record_tmux "$@"; }
+  export -f tmux record_tmux
+
+  # Act
+  bash "${PLUGIN_COPY}/extract-revamped.tmux"
+
+  # Assert
+  [ "$(wc -l < "${BINDS_FILE}" | tr -d ' ')" = "1" ]
+}
