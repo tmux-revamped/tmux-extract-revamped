@@ -277,3 +277,58 @@ teardown() {
   # Assert
   [[ "$(cat "${BATS_TEST_TMPDIR}/tmux_args")" == $'send-keys\n-t\n%1\n-l\n--\nEnter' ]]
 }
+
+@test "extract.sh - _open_path opens a relative path from the source pane directory" {
+  # Arrange
+  source "${BATS_TEST_DIRNAME}/../../../src/extract.sh"
+  tmux() {
+    case "${1}" in
+      display-message) printf '/work dir' ;;
+      new-window) printf '%s\n' "$@" > "${BATS_TEST_TMPDIR}/tmux_args" ;;
+    esac
+    return 0
+  }
+  export EDITOR="nvim"
+
+  # Act
+  _open_path "%1" "src/app.ts"
+
+  # Assert
+  [[ "$(cat "${BATS_TEST_TMPDIR}/tmux_args")" == $'new-window\n-c\n/work dir\n--\nsh\n-c\nset -f; exec $1 "$2"\n_\nnvim\nsrc/app.ts' ]]
+}
+
+@test "extract.sh - _open_path hands the editor a path with spaces and shell syntax as one literal argument" {
+  # Arrange
+  source "${BATS_TEST_DIRNAME}/../../../src/extract.sh"
+  tmux() {
+    if [[ "${1}" == "new-window" ]]; then
+      shift 4
+      "$@" > "${BATS_TEST_TMPDIR}/editor_out"
+    fi
+    return 0
+  }
+  export EDITOR="printf [%s]"
+
+  # Act
+  _open_path "%1" 'my file $(touch pwned) *.txt'
+
+  # Assert
+  [[ "$(cat "${BATS_TEST_TMPDIR}/editor_out")" == '[my file $(touch pwned) *.txt]' ]]
+}
+
+@test "extract.sh - _open_path expands a leading tilde to the home directory" {
+  # Arrange
+  source "${BATS_TEST_DIRNAME}/../../../src/extract.sh"
+  tmux() {
+    if [[ "${1}" == "new-window" ]]; then
+      printf '%s' "${!#}" > "${BATS_TEST_TMPDIR}/opened"
+    fi
+    return 0
+  }
+
+  # Act
+  _open_path "%1" \~/notes.md
+
+  # Assert
+  [[ "$(cat "${BATS_TEST_TMPDIR}/opened")" == "${HOME}/notes.md" ]]
+}

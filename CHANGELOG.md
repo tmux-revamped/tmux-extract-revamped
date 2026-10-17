@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   fail, and the README states the real tmux floor of 3.2.
 - Inserting a pick sends it as literal text, so a token such as `Enter` or
   `C-c` is typed rather than pressed as a key.
+- Opening a path passes it to the editor as one argument instead of a shell
+  string, so spaces and shell syntax in a picked token stay literal, and a
+  relative path opens from the source pane's directory.
 
 ## [1.2.0] - 2026-06-30
 

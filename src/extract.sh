@@ -68,7 +68,15 @@ _navigate() {
 _open_url() { if command -v xdg-open >/dev/null 2>&1; then xdg-open "${1}" >/dev/null 2>&1; elif command -v open >/dev/null 2>&1; then open "${1}" >/dev/null 2>&1; fi; return 0; }
 
 # _open_path TARGET PATH -> open PATH in $EDITOR in a new tmux window.
-_open_path() { tmux new-window "${EDITOR:-vi} ${2}" 2>/dev/null; return 0; }
+_open_path() {
+  local file="${2}" dir
+  if [[ "${file}" == \~/* ]]; then
+    file="${HOME}/${file#\~/}"
+  fi
+  dir="$(tmux display-message -p -t "${1}" '#{pane_current_path}' 2>/dev/null)"
+  tmux new-window -c "${dir:-${PWD}}" -- sh -c 'set -f; exec $1 "$2"' _ "${EDITOR:-vi}" "${file}" 2>/dev/null
+  return 0
+}
 
 # _clip_copy TEXT -> copy TEXT to the system clipboard. One physical line so the
 # untestable tool selection costs a single line of coverage.
