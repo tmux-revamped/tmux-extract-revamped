@@ -17,6 +17,10 @@ classify_target() {
     http://* | https://* | ftp://* | file://*) printf 'url'; return 0 ;;
     /* | ~/* | ./* | ../*) printf 'path'; return 0 ;;
   esac
+  if [[ "${s}" == *@*:* && "${s%%:*}" != */* ]]; then
+    printf 'other'
+    return 0
+  fi
   case "${s}" in
     *@*.*) printf 'url' ;;
     */*) printf 'path' ;;

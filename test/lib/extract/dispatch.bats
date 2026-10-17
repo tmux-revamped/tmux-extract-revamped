@@ -41,6 +41,18 @@ teardown() {
   [[ "$(classify_target 'user@host.com')" == "url" ]]
 }
 
+@test "classify_target treats an scp-like git remote as other" {
+  # Arrange
+  local remote="git@github.com:o/r.git"
+
+  # Act
+  local kind
+  kind="$(classify_target "${remote}")"
+
+  # Assert
+  [[ "${kind}" == "other" ]]
+}
+
 @test "classify_target treats a bare slash token as a path" {
   [[ "$(classify_target 'src/app.ts')" == "path" ]]
 }
