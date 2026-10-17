@@ -94,6 +94,14 @@ Press `prefix + I`. Requires [fzf](https://github.com/junegunn/fzf) on the path.
 | `@extract_revamped_popup_width` | `80%` | popup width |
 | `@extract_revamped_popup_height` | `60%` | popup height |
 
+### Internal state
+
+The plugin manages this option itself. Do not set it.
+
+| Option | Holds |
+|--------|-------|
+| `@extract_revamped_recent` | up to 20 recent picks, newest first, one per line, written and read only while `@extract_revamped_frecency` is `1` |
+
 ## Compatibility
 
 Needs tmux 3.2 or later, because the picker runs in `display-popup`. Linux (x86_64 and arm64) and macOS (Intel and Apple Silicon). Needs only fzf plus core tmux.
