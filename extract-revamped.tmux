@@ -22,7 +22,10 @@ mode="$(get_opt "@extract_revamped_mode" "all")"
 width="$(get_opt "@extract_revamped_popup_width" "80%")"
 height="$(get_opt "@extract_revamped_popup_height" "60%")"
 
-tmux bind-key "${key}" display-popup -E -w "${width}" -h "${height}" "${EXTRACT_CMD} ${mode} '#{pane_id}'"
+quoted_cmd="$(printf '%q' "${EXTRACT_CMD}")"
+quoted_mode="$(printf '%q' "${mode}")"
+
+tmux bind-key "${key}" display-popup -E -w "${width}" -h "${height}" "${quoted_cmd} ${quoted_mode} '#{pane_id}'"
 
 # Optional action keys. Each is opt-in so the plugin claims only one key by
 # default. They reuse the same dispatcher with a different action argument.
@@ -31,7 +34,7 @@ bind_action() {
   k="$(get_opt "${opt}" "")"
   if [[ -n "${k}" ]]; then
     tmux bind-key "${k}" display-popup -E -w "${width}" -h "${height}" \
-      "${EXTRACT_CMD} ${mode} '#{pane_id}' ${action}"
+      "${quoted_cmd} ${quoted_mode} '#{pane_id}' ${action}"
   fi
 }
 
@@ -48,5 +51,5 @@ bind_action "@extract_revamped_chooser_key" "chooser"
 doctor_key="$(get_opt "@extract_revamped_doctor_key" "")"
 if [[ -n "${doctor_key}" ]]; then
   tmux bind-key "${doctor_key}" display-popup -E -w "${width}" -h "${height}" \
-    "${EXTRACT_CMD} ${mode} '#{pane_id}' doctor; read -r"
+    "${quoted_cmd} ${quoted_mode} '#{pane_id}' doctor; read -r"
 fi
