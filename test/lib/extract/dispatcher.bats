@@ -258,6 +258,7 @@ teardown() {
   unset _EXTRACT_REVAMPED_DISPATCH_LOADED
   source "${BATS_TEST_DIRNAME}/../../../src/extract.sh"
   local saved="${PATH}"
+  # shellcheck disable=SC2123
   PATH=""
   _fzf </dev/null
   _open_url "https://example.com"

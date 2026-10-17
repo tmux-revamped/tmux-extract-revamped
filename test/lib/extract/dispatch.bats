@@ -32,6 +32,7 @@ teardown() {
 
 @test "classify_target recognizes path prefixes" {
   [[ "$(classify_target '/etc/hosts')" == "path" ]]
+  # shellcheck disable=SC2088
   [[ "$(classify_target '~/x')" == "path" ]]
   [[ "$(classify_target './a')" == "path" ]]
   [[ "$(classify_target '../b')" == "path" ]]
