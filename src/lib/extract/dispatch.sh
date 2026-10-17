@@ -1,16 +1,8 @@
 #!/usr/bin/env bash
-#
-# dispatch.sh: pure decision helpers for the extract dispatcher.
-#
-# These are pure: text in, text out, no fzf, no pane, no clipboard, no browser.
-# The side-effecting actions (open a URL, copy to the clipboard, run fzf) live in
-# the dispatcher behind seams. Keeping the decisions here keeps them testable.
 
 [[ -n "${_EXTRACT_REVAMPED_DISPATCH_LOADED:-}" ]] && return 0
 _EXTRACT_REVAMPED_DISPATCH_LOADED=1
 
-# classify_target STR -> "url", "path", or "other". Drives type-aware open:
-# URLs go to the browser, paths go to the editor, anything else is pasted.
 classify_target() {
   local s="${1}"
   case "${s}" in
@@ -28,21 +20,16 @@ classify_target() {
   esac
 }
 
-# join_selection SEP TEXT -> the non-blank lines of TEXT joined by SEP, so a
-# multi-select returns one string the dispatcher can insert in a single paste.
 join_selection() {
   local sep="${1}" text="${2}"
   printf '%s\n' "${text}" \
     | awk -v s="${sep}" 'NF{a[++n]=$0} END{for(i=1;i<=n;i++) printf "%s%s",(i>1?s:""),a[i]}'
 }
 
-# first_line TEXT -> the first non-blank line, for actions that take one value.
 first_line() {
   printf '%s\n' "${1}" | awk 'NF{print; exit}'
 }
 
-# next_mode CURRENT LIST -> the mode after CURRENT in the space-separated LIST,
-# wrapping past the end and falling back to the first when CURRENT is unknown.
 next_mode() {
   local cur="${1}" list="${2}" first="" found=0 m
   for m in ${list}; do
@@ -57,24 +44,18 @@ next_mode() {
   return 0
 }
 
-# parse_expect_key OUT -> the first line of fzf --expect output, the pressed key.
 parse_expect_key() {
   printf '%s\n' "${1}" | awk 'NR==1{print; exit}'
 }
 
-# parse_expect_rest OUT -> every line after the first, the actual selection(s).
 parse_expect_rest() {
   printf '%s\n' "${1}" | awk 'NR>1'
 }
 
-# osc52_sequence B64 -> the OSC 52 set-clipboard escape carrying an already
-# base64-encoded payload. Pure string assembly; the emit is a seam.
 osc52_sequence() {
   printf '\033]52;c;%s\a' "${1}"
 }
 
-# frecency_reorder RECENT ITEMS -> ITEMS with any line also present in RECENT
-# floated to the top in ITEMS order, the rest following, de-duplicated.
 frecency_reorder() {
   local recent="${1}" items="${2}"
   {
@@ -83,8 +64,6 @@ frecency_reorder() {
   } | awk 'NF && !seen[$0]++'
 }
 
-# doctor_report FZF OPENER CLIP BASE64 -> a glyph-free capability report so a
-# user can see which optional tools this host has before a token comes up empty.
 doctor_report() {
   printf 'tmux-extract-revamped doctor\n'
   printf '  fzf picker:    %s\n' "${1}"

@@ -2,8 +2,6 @@
 
 load "${BATS_TEST_DIRNAME}/../../helpers.bash"
 
-# Every interactive or destructive seam is replaced here. The suite never runs
-# real fzf, never opens a browser, and never writes to the clipboard.
 setup() {
   setup_test_environment
   unset _EXTRACT_REVAMPED_LOADED
@@ -250,9 +248,6 @@ teardown() {
   [[ "${output}" == "YWJj" ]]
 }
 
-# Run the interactive and destructive seams for real, but with PATH emptied so
-# their `command -v` guards short-circuit: no fzf, no browser, no clipboard tool
-# is ever invoked, yet the bodies execute for coverage.
 @test "extract.sh - interactive seams short-circuit when their tools are absent" {
   unset _EXTRACT_REVAMPED_LOADED
   unset _EXTRACT_REVAMPED_DISPATCH_LOADED
