@@ -8,7 +8,7 @@
 
 </div>
 
-**13** extractors · **zero Python** · **tmux 1.9 to 3.5** · **open · copy · multi-select** · **95%+** coverage
+**13** extractors · **zero Python** · **tmux 3.2+** · **open · copy · multi-select** · **95%+** coverage
 
 Press one key, fuzzy-search everything on screen, and the choice lands at your cursor. It captures the pane, pulls out URLs, file paths, words, or whole lines, and shows them in an fzf popup. Unlike extrakto, the extraction is **pure shell**, no Python runtime to install or keep working.
 
@@ -96,7 +96,7 @@ Press `prefix + I`. Requires [fzf](https://github.com/junegunn/fzf) on the path.
 
 ## Compatibility
 
-Works on every tmux version with `display-popup`, tmux 3.2 and up for the popup; on older tmux the picker can be wired to a split. Linux (x86_64 and arm64) and macOS (Intel and Apple Silicon). Needs only fzf plus core tmux.
+Needs tmux 3.2 or later, because the picker runs in `display-popup`. Linux (x86_64 and arm64) and macOS (Intel and Apple Silicon). Needs only fzf plus core tmux.
 
 ## Development
 

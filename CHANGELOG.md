@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - The popup commands quote the plugin path and mode, so a plugin directory
   containing a space or a single quote still launches the picker.
+- Platform tests assert their negative checks, which previously could not
+  fail, and the README states the real tmux floor of 3.2.
 
 ## [1.2.0] - 2026-06-30
 
