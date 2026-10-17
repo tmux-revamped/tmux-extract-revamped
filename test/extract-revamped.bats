@@ -60,3 +60,18 @@ record_tmux() {
   # Assert
   [ "$(wc -l < "${BINDS_FILE}" | tr -d ' ')" = "1" ]
 }
+
+@test "extract-revamped.tmux - the picker binds prefix M-x by default" {
+  # Arrange
+  tmux() {
+    [[ "${1}" == "bind-key" ]] && printf '%s\n' "${2}" >> "${BINDS_FILE}"
+    return 0
+  }
+  export -f tmux
+
+  # Act
+  bash "${PLUGIN_COPY}/extract-revamped.tmux"
+
+  # Assert
+  [ "$(sed -n 1p "${BINDS_FILE}")" = "M-x" ]
+}

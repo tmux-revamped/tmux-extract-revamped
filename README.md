@@ -4,7 +4,7 @@
 
 **Fuzzy-grab any URL, path, or word off the screen and paste it, pure shell, no Python.**
 
-[![Tests](https://github.com/tmux-revamped/tmux-extract-revamped/actions/workflows/tests.yml/badge.svg)](https://github.com/tmux-revamped/tmux-extract-revamped/actions/workflows/tests.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE) [![Version](https://img.shields.io/badge/version-1.2.0-blue.svg)](CHANGELOG.md)
+[![Tests](https://github.com/tmux-revamped/tmux-extract-revamped/actions/workflows/tests.yml/badge.svg)](https://github.com/tmux-revamped/tmux-extract-revamped/actions/workflows/tests.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE) [![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)](CHANGELOG.md)
 
 </div>
 
@@ -27,7 +27,7 @@ Built from [tmux-plugin-template](https://github.com/tmux-revamped/tmux-plugin-t
 
 ## Usage
 
-Press `prefix + Tab` to open the picker over the current pane. Type to filter, `Enter` to insert the selection at your cursor. The key, the mode, and the popup size are all configurable.
+Press `prefix + M-x` to open the picker over the current pane. Type to filter, `Enter` to insert the selection at your cursor. The key, the mode, and the popup size are all configurable.
 
 ## Modes
 
@@ -75,7 +75,7 @@ Press `prefix + I`. Requires [fzf](https://github.com/junegunn/fzf) on the path.
 
 | Option | Default | Meaning |
 |--------|---------|---------|
-| `@extract_revamped_key` | `Tab` | key that opens the picker |
+| `@extract_revamped_key` | `M-x` | key that opens the picker |
 | `@extract_revamped_navigate_key` | unset | optional key that opens copy-mode and searches for the choice in context |
 | `@extract_revamped_open_key` | unset | optional key that opens the choice by type (URL, path, else paste) |
 | `@extract_revamped_copy_key` | unset | optional key that copies the choice to the clipboard |

@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-10-17
+
+### Changed
+
+- **Breaking:** the picker now opens on `prefix + M-x` by default instead of
+  `prefix + Tab`, because tmux 3.8 binds `prefix + Tab` to a floating new-pane
+  helper and the family keeps stock keys free. Set `@extract_revamped_key` to
+  `Tab` to keep the old key.
+
 ### Fixed
 
 - The popup commands quote the plugin path and mode, so a plugin directory

@@ -17,7 +17,7 @@ get_opt() {
 
 chmod +x "${EXTRACT_CMD}" 2>/dev/null || true
 
-key="$(get_opt "@extract_revamped_key" "Tab")"
+key="$(get_opt "@extract_revamped_key" "M-x")"
 mode="$(get_opt "@extract_revamped_mode" "all")"
 width="$(get_opt "@extract_revamped_popup_width" "80%")"
 height="$(get_opt "@extract_revamped_popup_height" "60%")"
