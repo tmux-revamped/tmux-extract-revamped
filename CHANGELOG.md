@@ -1,5 +1,32 @@
 # Changelog
 
+# [3.0.0](https://github.com/tmux-revamped/tmux-extract-revamped/compare/v2.0.0...v3.0.0) (2026-11-16)
+
+
+* feat!: rewrite the plugin in POSIX sh ([8cb3860](https://github.com/tmux-revamped/tmux-extract-revamped/commit/8cb38606d4acbcc69aadac28c6cdcb37e5fb7bae))
+
+
+### Bug Fixes
+
+* **family:** fail when git cannot read a mode ([e57d72e](https://github.com/tmux-revamped/tmux-extract-revamped/commit/e57d72ef7759f1041ba04540f63a2368f185e511))
+* **family:** honor only active exceptions ([d7202c0](https://github.com/tmux-revamped/tmux-extract-revamped/commit/d7202c0fe077ebd211e4423e45f379f5e52cd393))
+* **family:** reject unquoted replacements ([f9de3f0](https://github.com/tmux-revamped/tmux-extract-revamped/commit/f9de3f0e4361f97413bb91a1a911a535a2de7aaa))
+* **family:** require executable entry points ([fbfa1fa](https://github.com/tmux-revamped/tmux-extract-revamped/commit/fbfa1faf530c7fa179f47c8950338ebd44de83ad))
+
+
+### Features
+
+* add a shared desktop notifier ([73587ab](https://github.com/tmux-revamped/tmux-extract-revamped/commit/73587abc35f8238f535ff2f0dd66d4a5c46c838b))
+* **family:** accept bot updates in the audit ([6f44be3](https://github.com/tmux-revamped/tmux-extract-revamped/commit/6f44be32101e68f3b49e95301976e8f2153f6cba))
+
+
+### BREAKING CHANGES
+
+* last-log reads the new @extract_revamped_log_dir,
+default ~/.tmux/logging-revamped, instead of logging's
+@logging_revamped_path. The old src/extract.sh MODE PANE ACTION
+interface is gone; the keys and scripts call bin/extract-revamped.
+
 All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
