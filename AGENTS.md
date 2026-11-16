@@ -8,51 +8,45 @@ Guidance for anyone, human or agent, changing tmux-extract-revamped. What it is 
 
 | Path | Holds |
 |:-----|:------|
-| [`extract-revamped.tmux`](extract-revamped.tmux) | The entry point TPM runs |
-| [`src/extract.sh`](src/extract.sh) | The script the entry point and the keys call |
-| [`src/lib/extract/`](src/lib/extract) | This member's modules |
-| [`src/lib/utils/constants.sh`](src/lib/utils/constants.sh) | This member's constants, including its version |
-| [`src/lib/utils/`](src/lib/utils), [`src/lib/tmux/`](src/lib/tmux) | The shared library. Every file there except `constants.sh` is identical in every member |
-| [`test/`](test) | The bats suite. `helpers.bash` and `tmux_helpers.bash` are identical in every member; this member's own mocks go in the `_local` files |
+| [`extract-revamped.tmux`](extract-revamped.tmux) | The entry point TPM runs: it runs `bin/extract-revamped apply` |
+| [`bin/extract-revamped`](bin/extract-revamped) | The command: `apply`, `list`, `insert`, `navigate`, `open`, `copy`, `choose`, `doctor`, `version`, `help` and the menu. `apply` and the pick commands run without loading the interface modules |
+| [`lib/extract.sh`](lib/extract.sh) | Reading the settings, the binding plan, the extractors, gathering the text, the picker and the actions |
+| [`lib/state.sh`](lib/state.sh) | Every global, including `EXTRACT_REVAMPED_SETTINGS`, the table of setting names and defaults the rest reads |
+| [`lib/core.sh`](lib/core.sh) | The version |
+| [`lib/`](lib) | Every other file is the shared library, identical in every member |
+| [`test/extract.bats`](test/extract.bats), [`test/commands.bats`](test/commands.bats), [`test/entrypoint.bats`](test/entrypoint.bats) | This member's suites: the extractors, the plan and the pickers through stubs, the commands, and the bindings and actions on a private tmux server with a plain `sh` pane |
+| [`screens/`](screens) | The tapes, the recording's tmux config and a demo build log the tapes pick from |
 
 ## Names
 
-- Settings are tmux options named `@extract_revamped_<setting>`.
+- Settings are the tmux options `@extract_revamped_<setting>` listed in `EXTRACT_REVAMPED_SETTINGS`, the long options with dashes, such as `--min-length`, and the environment variables `EXTRACT_REVAMPED_<SETTING>`.
+- The plugin writes `@extract_revamped_recent`, the last 20 picks, while frecency is on; it is state, never a setting.
 - It has no status placeholders.
-- Public functions carry `extract_`; private ones start with `_`.
 - The version constant is `EXTRACT_REVAMPED_VERSION`.
-- Its command-line tool, once it exists, is `extract-revamped`.
 
 ## Behaviour
 
-- Picks a URL, path, hash or other token off the screen with fzf and types it at the cursor, opens it, or copies it.
-- `M-x` extracts from the screen.
-- Each key runs `display-popup -E` with [`src/extract.sh`](src/extract.sh), the mode, the source pane id and the action. The script reads the text with `capture-pane`, runs the extractor, and hands the matches to fzf.
+- `apply` reads every setting with one `tmux display-message` call and one `env` read, reads `list-keys -T prefix` once for the default key, builds the plan, and sends every binding to tmux in one call separated by `;`.
+- A key runs `display-popup -E` with one pick command and no pane, because tmux expands no format in a popup's command; the pick command reads the client's active pane, the one under the popup, and the settings when it runs, so a setting change needs no reload.
+- An empty tmux option means its default; `@extract_revamped_key` set to `none` binds no picker key.
+- A default key the person bound before the plugin loaded stays theirs, and `doctor` reports it.
+- The entry point clears every inherited `REVAMPED_` variable except the test switches, and every `EXTRACT_REVAMPED_*_LOADED` guard; every other global is assigned outright in the state file.
 
 ## Domain rules
 
-- The chosen token is typed with `send-keys -l`, so it reaches the pane as literal text.
-- A copy goes to `pbcopy`, `wl-copy` or `xclip`, or out as an OSC 52 sequence when `@extract_revamped_osc52` is `1`.
+- A picked token is typed with `send-keys -l`, so it reaches the pane as literal text, and several marked tokens are joined by spaces.
+- Open sends a URL to `xdg-open` or `open`, starts `$EDITOR` on a path in a new window at the source pane's folder, passing the path as one argument with globbing off, and types anything else.
+- A copy goes to `pbcopy` on macOS, then `wl-copy`, `xclip` and `xsel`, or out as an OSC 52 sequence when `@extract_revamped_osc52` is `1`.
+- `all-panes` captures every pane of the window in one tmux call; `last-log` reads the newest file of the log folder, found by a glob and `-nt`, never by parsing `ls`.
+- The chooser's mode changes are bounded at 12 rounds, so an answer that keeps changing the mode cannot loop forever.
 
 ## Release
 
-- `EXTRACT_REVAMPED_VERSION` in [`src/lib/utils/constants.sh`](src/lib/utils/constants.sh) holds the version. It must equal the newest versioned heading in [`CHANGELOG.md`](CHANGELOG.md) and the README's version badge, which the `version` job in `tests.yml` checks.
-- A push to `main` whose version has no tag yet makes the `release` job in `tests.yml` tag `vX.Y.Z` and publish a GitHub release with that changelog section.
-- Unreleased changes sit under `## [Unreleased]` in [`CHANGELOG.md`](CHANGELOG.md) until a release is cut.
+- `EXTRACT_REVAMPED_VERSION` in [`lib/core.sh`](lib/core.sh) holds the version. Nobody edits it by hand.
+- After a green `ci` run on `main`, [`release.yml`](.github/workflows/release.yml) runs semantic-release: a `feat` or `fix` since the last tag publishes a release, [`set-version.sh`](.github/scripts/set-version.sh) stamps the constant, and the notes go into [`CHANGELOG.md`](CHANGELOG.md).
 
 ## Gaps against FAMILY.md
 
-As of 2026-11-15:
+As of 2026-11-16:
 
-- Every script is bash, under `#!/usr/bin/env bash`, not POSIX `sh`, so it is untested under `dash`, `zsh` and BusyBox `sh`.
-- The code lives in [`src/`](src) and [`src/lib/`](src/lib); there is no `bin/extract-revamped`, `lib/state.sh` or `lib/core.sh`.
-- No `extract-revamped` command with `help`, `version` and `doctor` in the family's form, no man page, no completions and no `manifest.json`.
-- No gum interface: no `lib/ui.sh`, `lib/table.awk`, themes or `test/bin/gum`.
-- No `screens/`: no VHS recording of each feature, no on-screen caption of the keys each recording presses, and no recordings in the README.
-- The README sections are not the family's order of Quick start, Usage, topic sections, Portability, Development and License.
-- Coverage is kcov with a 95 percent floor on Linux, not bashcov at 100 percent merged from macOS and Linux.
-- CI tests GNU, BSD and uutils tools in `tests.yml`, but not the six toolsets through `.github/scripts/toolset.sh`, and no shell matrix under `sh`, `dash`, `bash` and `zsh`.
-- No golden transcripts, `call.sh`, `run-matrix.sh` or `linux-container.sh`.
-- The version is written by hand and released by `tests.yml`; there is no semantic-release, `package.json`, `release.yml` with `recover`, `bot-merge.yml` or Renovate.
-- CI is `tests.yml` and `security.yml`, not `ci.yml`, and no job starts with `step-security/harden-runner`.
-- No `.editorconfig`, `.yamllint.yml` or shfmt; the Makefile has `help`, `test`, `test-unit`, `coverage`, `lint` and `clean`, not the family's targets.
+- Only `prefix M-x` is pressed through a real client in a test; the navigate, open, copy, chooser and doctor keys are checked as bindings and their commands called directly.

@@ -1,0 +1,47 @@
+#compdef extract-revamped
+
+_extract_revamped() {
+  local -a commands
+  commands=(
+    'apply:bind the keys now'
+    'list:print every binding apply would make'
+    'insert:pick a token and type it'
+    'navigate:pick a token and find it in copy-mode'
+    'open:pick a token and open it'
+    'copy:pick a token and copy it'
+    'choose:pick in the chooser'
+    'doctor:check this machine'
+    'version:print the version'
+    'help:print the help page'
+  )
+
+  _arguments \
+    '--json[list prints one JSON object]' \
+    '--theme[colours of the terminal interface]:theme:(kodougu catppuccin-mocha catppuccin-latte dracula nord gruvbox tokyo-night mono)' \
+    '--key[prefix key of the picker]:value:' \
+    '--navigate-key[key of the navigate picker]:value:' \
+    '--open-key[key of the open picker]:value:' \
+    '--copy-key[key of the copy picker]:value:' \
+    '--chooser-key[key of the chooser]:value:' \
+    '--doctor-key[key of the doctor report]:value:' \
+    '--mode[what to pick]:value:(all urls paths words lines shas ipv4 ipv6 hex uuids numbers quoted bracketed custom)' \
+    '--modes[modes the chooser cycles]:value:' \
+    '--scope[text to read]:value:(pane all-panes last-log)' \
+    '--log-dir[folder last-log reads]:value:' \
+    '--custom-regex[regex of the custom mode]:value:' \
+    '--min-length[drop shorter tokens]:value:' \
+    '--reverse[last match first]:value:(0 1)' \
+    '--multi[mark several tokens]:value:(0 1)' \
+    '--osc52[copy with OSC 52]:value:(0 1)' \
+    '--frecency[recent picks first]:value:(0 1)' \
+    '--lines[scrollback lines]:value:' \
+    '--popup-width[popup width]:value:' \
+    '--popup-height[popup height]:value:' \
+    '1:command:->command'
+
+  if [[ "${state}" == command ]]; then
+    _describe 'command' commands
+  fi
+}
+
+_extract_revamped "$@"

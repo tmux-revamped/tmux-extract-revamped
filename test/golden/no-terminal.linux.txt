@@ -1,0 +1,3 @@
+$ extract-revamped
+extract-revamped: no command given. run 'extract-revamped help' for usage.
+exit 1

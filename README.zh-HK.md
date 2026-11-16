@@ -2,82 +2,59 @@
 
 # tmux-extract-revamped
 
-<strong>用 fzf 從畫面上揀選 URL、路徑、雜湊值或任何其他字詞，並輸入到游標位置，全部以純 shell 實現。</strong>
+<strong>用 fzf 從畫面上選取 URL、路徑、雜湊值或其他任何片段，並輸入到游標處，純 shell 實現。</strong>
 
-[English](README.md) | [日本語](README.ja.md) | [简体中文](README.zh-Hans.md) | 繁體中文（香港）
+[English](README.md) &nbsp;|&nbsp; [日本語](README.ja.md) &nbsp;|&nbsp; [简体中文](README.zh-Hans.md) &nbsp;|&nbsp; 繁體中文（香港）
 
-[![family](https://img.shields.io/github/actions/workflow/status/tmux-revamped/tmux-extract-revamped/family.yml?branch=main&style=flat-square&label=family)](https://github.com/tmux-revamped/tmux-extract-revamped/actions/workflows/family.yml)
-[![tests](https://img.shields.io/github/actions/workflow/status/tmux-revamped/tmux-extract-revamped/tests.yml?branch=main&style=flat-square&label=tests)](https://github.com/tmux-revamped/tmux-extract-revamped/actions/workflows/tests.yml)
+[![ci](https://img.shields.io/github/actions/workflow/status/tmux-revamped/tmux-extract-revamped/ci.yml?branch=main&style=flat-square&label=ci)](https://github.com/tmux-revamped/tmux-extract-revamped/actions/workflows/ci.yml)
 [![release](https://img.shields.io/github/v/release/tmux-revamped/tmux-extract-revamped?style=flat-square&label=release)](https://github.com/tmux-revamped/tmux-extract-revamped/releases/latest)
 [![openssf scorecard](https://img.shields.io/ossf-scorecard/github.com/tmux-revamped/tmux-extract-revamped?style=flat-square&label=openssf%20scorecard)](https://scorecard.dev/viewer/?uri=github.com/tmux-revamped/tmux-extract-revamped)
 [![license](https://img.shields.io/github/license/tmux-revamped/tmux-extract-revamped?style=flat-square&label=license)](LICENSE)
 
 <p align="center">
-  <a href="#功能">功能</a> |
-  <a href="#系統要求">系統要求</a> |
-  <a href="#安裝">安裝</a> |
-  <a href="#用法">用法</a> |
-  <a href="#設定">設定</a> |
-  <a href="#按鍵綁定">按鍵綁定</a> |
-  <a href="#運作原理">運作原理</a> |
-  <a href="#開發">開發</a>
+  <a href="#快速開始"><strong>快速開始</strong></a> &nbsp;|&nbsp;
+  <a href="#用法">用法</a> &nbsp;|&nbsp;
+  <a href="#模式">模式</a> &nbsp;|&nbsp;
+  <a href="#畫面">畫面</a>
 </p>
 
 </div>
 
-**14** 種擷取模式，對選中項目有 **5** 種操作，每個擷取器都是 grep、sed 或 awk 管線，不需要 Python。
+<p align="center">
+  <img src="screens/hero.gif" alt="extract-revamped 用 fzf 從建置記錄中選取 URL 並輸入到提示字元" width="800">
+</p>
+
+```console
+$ EXTRACT_REVAMPED_OPEN_KEY=o extract-revamped list
+bind-key M-x display-popup -E -w 80% -h 60% '/home/user/.tmux/plugins/tmux-extract-revamped/bin/extract-revamped' insert '#{pane_id}'
+bind-key o display-popup -E -w 80% -h 60% '/home/user/.tmux/plugins/tmux-extract-revamped/bin/extract-revamped' open '#{pane_id}'
+```
+
+按下 `prefix M-x`，彈出視窗會在 fzf 中列出畫面上所有 URL、路徑和字詞。選取一個，它就會以字面文字輸入到原窗格的游標處。其他按鍵可以開啟片段、複製片段，或在複製模式中尋找它。
 
 ---
 
-## 功能
+## 快速開始
 
-按下 `prefix + M-x`，fzf 彈出視窗會列出目前窗格中所有 URL、檔案路徑和字詞。輸入文字篩選，按 `Enter`，選中項目便會以字面文字輸入到你原來的窗格。
+### 前提條件
 
-預設讀取可見畫面及其上方 200 行回捲內容。亦可讀取視窗內所有窗格，或讀取 [tmux-logging-revamped](https://github.com/tmux-revamped/tmux-logging-revamped) 寫出的最新擷取檔案。
+| 工具 | 版本 | 用途 |
+|:-----|:--------|:---------|
+| tmux | 3.2 或以上 | 彈出視窗 |
+| fzf | 任何版本 | 選擇器；缺少時 `doctor` 會報告 |
+| 開啟工具 | 可選 | 用於 URL：macOS 上的 `open`，Linux 上的 `xdg-open` |
+| 剪貼簿工具 | 可選 | macOS 上的 `pbcopy`，Linux 上的 `wl-copy`、`xclip` 或 `xsel`，或透過 `base64` 的 OSC 52 |
+| gum | 可選 | `extract-revamped` 的選單、表格和顏色；沒有它，所有命令都輸出純文字 |
 
-| 模式 | 擷取內容 |
-|:-----|:---------|
-| `all` | 依次為 URL、路徑、字詞，並移除重複項目 |
-| `urls` | `http`、`https`、`ftp` 和 `file` URL，以及電郵地址 |
-| `paths` | 絕對路徑、以 `~/`、`./`、`../` 開頭的路徑及相對路徑 |
-| `words` | 每個以空白分隔的字詞 |
-| `lines` | 每個非空行，並移除前後空白 |
-| `shas` | 長度為 7 至 40 個字元、最少包含一個字母的十六進制物件名稱 |
-| `ipv4` | 每個八位元組都不大於 255 的點分十進制地址 |
-| `ipv6` | 完整形式及 `::` 壓縮形式的 IPv6 地址 |
-| `color` | CSS 十六進制顏色：`#rgb`、`#rgba`、`#rrggbb`、`#rrggbbaa` |
-| `uuid` | 標準 8-4-4-4-12 格式的 UUID |
-| `numbers` | 可帶正負號的整數及小數 |
-| `quoted` | 單引號、雙引號或反引號內的文字 |
-| `bracketed` | `()`、`[]`、`{}` 或 `<>` 內的文字 |
-| `custom` | 符合 `@extract_revamped_custom_regex` 中擴展正規表示式的內容 |
-
-URL 和路徑會移除結尾的 `.`、`,`、`)` 及引號等標點。每種模式都會移除重複項目，每個擷取器按配對項目在畫面上首次出現的次序列出。
-
-## 系統要求
-
-| 要求 | 版本或說明 |
-|:------------|:----------------|
-| tmux | 3.2 或以上，因為需要 `display-popup` |
-| bash | 3.2 或以上，macOS 內置的 `/bin/bash` 亦可使用 |
-| [fzf](https://github.com/junegunn/fzf) | 必須在 `PATH` 之中；沒有的話，彈出視窗會直接關閉，不揀選任何內容 |
-| 開啟程式，可選 | `xdg-open` 或 `open`，用於開啟 URL |
-| 剪貼簿，可選 | `pbcopy`、`wl-copy` 或 `xclip`，用於複製操作 |
-| `base64`，可選 | 用於透過 OSC 52 複製 |
-
-CI 在 Linux x86_64 及 arm64 上以 GNU 和 uutils coreutils 執行測試，並在 macOS Apple Silicon 及 Intel 上以系統內置的 BSD 工具、GNU coreutils 和 uutils coreutils 執行測試。
-
-## 安裝
-
-使用 [TPM](https://github.com/tmux-plugins/tpm) 時，將插件加入 `~/.tmux.conf`，然後按 `prefix + I`：
+### 安裝
 
 ```tmux
 set -g @plugin 'tmux-revamped/tmux-extract-revamped'
 ```
 
-不使用 TPM 時，複製儲存庫，並在 `~/.tmux.conf` 中執行入口腳本：
+然後按 `prefix + I`。不使用 TPM 時，複製儲存庫，並在 `~/.tmux.conf` 中執行它的入口腳本：
 
-```sh
+```bash
 git clone https://github.com/tmux-revamped/tmux-extract-revamped ~/.tmux/plugins/tmux-extract-revamped
 ```
 
@@ -85,103 +62,163 @@ git clone https://github.com/tmux-revamped/tmux-extract-revamped ~/.tmux/plugins
 run-shell ~/.tmux/plugins/tmux-extract-revamped/extract-revamped.tmux
 ```
 
+在複製的目錄中執行 `make install`，亦會把 `extract-revamped` 放入 `~/.local/bin`，並把它的 man 手冊和自動完成放在 `~/.local/share` 下。
+
+### 驗證
+
+```bash
+~/.tmux/plugins/tmux-extract-revamped/bin/extract-revamped doctor
+```
+
 ## 用法
 
-`prefix + M-x` 以預設模式開啟揀選器。其他操作在你為其指定按鍵之前都不會綁定：
+| 按鍵 | 作用 | 預設 |
+|:----|:-------|:--------|
+| `prefix M-x` | 選取片段並輸入到游標處 | 已綁定 |
+| `@extract_revamped_navigate_key` | 選取片段並在複製模式中尋找 | 未綁定 |
+| `@extract_revamped_open_key` | 選取片段並開啟：URL 在瀏覽器中，路徑在新視窗的 `$EDITOR` 中，其他內容直接輸入 | 未綁定 |
+| `@extract_revamped_copy_key` | 選取片段並複製 | 未綁定 |
+| `@extract_revamped_chooser_key` | 在選擇器中選取：`Enter` 輸入，`C-o` 開啟，`C-y` 複製，`C-n` 切換到下一個模式 | 未綁定 |
+| `@extract_revamped_doctor_key` | 在彈出視窗中顯示 doctor 報告 | 未綁定 |
 
-```tmux
-set -g @extract_revamped_open_key 'M-o'
-set -g @extract_revamped_copy_key 'M-y'
-set -g @extract_revamped_chooser_key 'M-u'
-```
+`M-x` 是本插件在系列按鍵分配中的位置。如果你已自行綁定 `prefix M-x`，插件會保留它，並由 `doctor` 說明；可把 `@extract_revamped_key` 設為其他按鍵，或設為 `none` 表示不綁定。
 
-| 操作 | 對選中項目的處理 |
-|:-------|:-------------------------|
-| insert | 輸入到來源窗格；`prefix + M-x` 執行的正是這個操作 |
-| navigate | 來源窗格進入複製模式，並按字面向後搜尋選中項目 |
-| open | URL 交給 `xdg-open` 或 `open`，路徑在新視窗的 `$EDITOR` 中開啟，新視窗由來源窗格的目錄啟動，其他內容則直接輸入 |
-| copy | 交給 `pbcopy`、`wl-copy` 或 `xclip`；當 `@extract_revamped_osc52` 為 `1` 時輸出 OSC 52 序列 |
-| chooser | 在一個彈出視窗中完成所有操作：`ctrl-n` 切換到 `@extract_revamped_modes` 中的下一個模式，`ctrl-o` 開啟，`ctrl-y` 複製，`Enter` 輸入 |
-| doctor | 顯示是否有 fzf、開啟程式、剪貼簿工具及 `base64`，然後等待 `Enter` |
+| 命令 | 作用 |
+|:--------|:-------------|
+| `extract-revamped apply` | 立即綁定按鍵；插件載入時入口點會執行它 |
+| `extract-revamped list` | 列出 apply 會做的每個綁定；`--json` 輸出一個物件 |
+| `extract-revamped insert`, `navigate`, `open`, `copy`, `choose` `PANE` | 在窗格上執行選擇器；按鍵會在彈出視窗中執行這些命令 |
+| `extract-revamped doctor` | 每個依賴一行，包括被他人佔用的預設按鍵 |
+| `extract-revamped version` | 版本，然後是 tmux 版本 |
+| `extract-revamped help` | 說明頁；`man extract-revamped` 記錄相同的命令和設定 |
+| `extract-revamped` | 在終端機上顯示選單 |
 
-當 `@extract_revamped_multi` 設為 `1` 時，以及在 chooser 之中，可用 `Tab` 標記多個候選項目。insert 以單一空格連接後輸入，copy 複製全部，open 只處理第一個。
-
-## 設定
-
-| 選項 | 預設值 | 意思 |
-|:-------|:--------|:--------|
-| `@extract_revamped_key` | `M-x` | 開啟揀選器的按鍵；設為空值時仍為 `M-x` |
-| `@extract_revamped_navigate_key` | 未設定 | navigate 操作的按鍵 |
-| `@extract_revamped_open_key` | 未設定 | open 操作的按鍵 |
-| `@extract_revamped_copy_key` | 未設定 | copy 操作的按鍵 |
-| `@extract_revamped_chooser_key` | 未設定 | 彈出視窗內 chooser 的按鍵 |
-| `@extract_revamped_doctor_key` | 未設定 | doctor 報告的按鍵 |
-| `@extract_revamped_mode` | `all` | 所有按鍵啟動時使用的模式，於插件載入時讀取 |
-| `@extract_revamped_modes` | `all urls paths words lines` | chooser 中 `ctrl-n` 循環切換的模式 |
-| `@extract_revamped_scope` | `pane` | 讀取的文字：`pane`；`all-panes` 代表視窗內所有窗格；`last-log` 代表 `@logging_revamped_path` 中最新的檔案 |
-| `@extract_revamped_custom_regex` | 未設定 | `custom` 模式使用的擴展正規表示式 |
-| `@extract_revamped_min_length` | `0` | 捨棄短於此字元數的候選項目 |
-| `@extract_revamped_reverse` | `0` | 設為 `1` 時反轉列表，令畫面上最後一個配對排在最前 |
-| `@extract_revamped_multi` | `0` | 設為 `1` 時容許在 fzf 中標記多個候選項目 |
-| `@extract_revamped_osc52` | `0` | 設為 `1` 時 copy 輸出 OSC 52，而不呼叫剪貼簿工具 |
-| `@extract_revamped_frecency` | `0` | 設為 `1` 時將最近揀選過的候選項目移到最前 |
-| `@extract_revamped_lines` | `200` | 在可見畫面上方讀取的回捲行數 |
-| `@extract_revamped_popup_width` | `80%` | 彈出視窗闊度 |
+| tmux 選項 | 預設值 | 含義 |
+|:------------|:--------|:--------|
+| `@extract_revamped_key` | `M-x` | 插入選擇器的前置鍵；`none` 表示不綁定 |
+| `@extract_revamped_mode` | `all` | 要選取的內容，取下面的模式之一 |
+| `@extract_revamped_modes` | `all urls paths words lines` | 選擇器中 `C-n` 循環的模式 |
+| `@extract_revamped_scope` | `pane` | 要讀取的文字：`pane`、視窗的 `all-panes`，或記錄資料夾中最新檔案的 `last-log` |
+| `@extract_revamped_log_dir` | `~/.tmux/logging-revamped` | `last-log` 讀取的資料夾 |
+| `@extract_revamped_custom_regex` | 無 | `custom` 模式的延伸正規表示式 |
+| `@extract_revamped_min_length` | `0` | 去掉比這更短的片段 |
+| `@extract_revamped_reverse` | `0` | `1` 時把畫面上最後的相符項放在最前 |
+| `@extract_revamped_multi` | `0` | `1` 時可在 fzf 中用 `Tab` 標記多個片段；insert 以空格連接輸入 |
+| `@extract_revamped_osc52` | `0` | `1` 時用 OSC 52 序列代替剪貼簿工具複製 |
+| `@extract_revamped_frecency` | `0` | `1` 時把最近選取的放在最前，並在 `@extract_revamped_recent` 中保留最後 20 個 |
+| `@extract_revamped_lines` | `200` | 在畫面上方讀取的捲動記錄行數 |
+| `@extract_revamped_popup_width` | `80%` | 彈出視窗寬度 |
 | `@extract_revamped_popup_height` | `60%` | 彈出視窗高度 |
 
-`last-log` 讀取 `@logging_revamped_path`，其預設值為 `~/.tmux/logging-revamped`。
+設定在按鍵執行時讀取，所以修改由下一次選取起生效；按鍵本身在 `extract-revamped apply` 或重新載入設定後生效。每個選項亦可寫成以短橫線連接的命令選項，例如 `--min-length 4`，以及環境變數，例如 `EXTRACT_REVAMPED_MIN_LENGTH`；命令列優先於環境變數，環境變數優先於 tmux 選項。空的 tmux 選項表示使用預設值。
 
-### 內部狀態
+<a id="模式"></a>
 
-此選項由插件自行管理，請勿設定。
+## 模式
 
-| 選項 | 儲存內容 |
-|:-------|:------|
-| `@extract_revamped_recent` | 最多 20 項最近揀選的項目，最新的排先，每行一項；只在 `@extract_revamped_frecency` 為 `1` 時讀寫 |
+| 模式 | 選取 |
+|:-----|:------|
+| `all` | URL、路徑和字詞，不重複 |
+| `urls` | `http`、`https`、`ftp` 和 `file` URL 以及電郵地址，去掉末尾標點 |
+| `paths` | 絕對路徑、主目錄、`./` 和 `../` 路徑，以及任何含斜線的字詞 |
+| `words` | 空白分隔的每個字詞 |
+| `lines` | 每個非空行，去掉首尾空白 |
+| `shas` | 含字母的 7 至 40 位十六進位物件名稱 |
+| `ipv4`, `ipv6` | 位址，去掉超出範圍的 IPv4 段 |
+| `hex` | 十六進位顏色，例如 `#a1b2c3` |
+| `uuids` | 標準格式的 UUID |
+| `numbers` | 帶正負號的整數和小數 |
+| `quoted` | 雙引號、單引號或反引號中的文字 |
+| `bracketed` | 圓括號、方括號、大括號或角括號中的文字 |
+| `custom` | `@extract_revamped_custom_regex` 的相符項 |
 
-## 按鍵綁定
+選取的片段用 `send-keys -l` 輸入，所以像 `Enter` 這樣的片段會以文字輸入，而不會被按下。開啟時會由按下按鍵的窗格所在資料夾啟動編輯器，並把路徑作為一個參數傳入。
 
-| 按鍵 | 操作 | 預設 |
-|:----|:-------|:--------|
-| `prefix + M-x` | 揀選器，insert 操作 | 已綁定 |
-| `@extract_revamped_navigate_key` | 揀選器，navigate 操作 | 未綁定 |
-| `@extract_revamped_open_key` | 揀選器，open 操作 | 未綁定 |
-| `@extract_revamped_copy_key` | 揀選器，copy 操作 | 未綁定 |
-| `@extract_revamped_chooser_key` | chooser 彈出視窗 | 未綁定 |
-| `@extract_revamped_doctor_key` | doctor 報告 | 未綁定 |
+<a id="畫面"></a>
 
-`M-x` 是本插件在插件家族按鍵分配中的位置。2.0.0 版把它由 `Tab` 移過來，因為 tmux 3.8 預設綁定了 `Tab`。如要保留舊按鍵：
+## 畫面
 
-```tmux
-set -g @extract_revamped_key 'Tab'
-```
+<details>
+<summary>所有畫面，在真實的 tmux 中用 <code>make screens</code> 錄製，每個按鍵顯示在狀態列上</summary>
+<br>
 
-## 運作原理
+<table>
+<tr>
+<td width="50%" valign="top"><img src="screens/picker.png" alt="extract-revamped：prefix M-x 列出畫面上所有片段"><br><sub><code>prefix M-x</code> 列出畫面上所有片段，來自 <code>hero.tape</code></sub></td>
+<td width="50%" valign="top"><img src="screens/inserted.png" alt="extract-revamped：選取的 URL 輸入到提示字元"><br><sub>選取的 URL 輸入到提示字元，來自 <code>hero.tape</code></sub></td>
+</tr>
+<tr>
+<td width="50%" valign="top"><img src="screens/urls.png" alt="extract-revamped：@extract_revamped_mode urls 只列出 URL"><br><sub><code>@extract_revamped_mode urls</code> 只列出 URL，來自 <code>hero.tape</code></sub></td>
+<td width="50%" valign="top"><img src="screens/navigate.png" alt="extract-revamped：navigate 鍵在複製模式中尋找片段"><br><sub>navigate 鍵在複製模式中尋找片段，來自 <code>stills.tape</code></sub></td>
+</tr>
+<tr>
+<td width="50%" valign="top"><img src="screens/open.png" alt="extract-revamped：open 鍵在編輯器中顯示路徑"><br><sub>open 鍵在編輯器中顯示路徑，來自 <code>stills.tape</code></sub></td>
+<td width="50%" valign="top"><img src="screens/copy.png" alt="extract-revamped：copy 鍵把片段放進剪貼簿"><br><sub>copy 鍵把片段放進剪貼簿，來自 <code>stills.tape</code></sub></td>
+</tr>
+<tr>
+<td width="50%" valign="top"><img src="screens/chooser.png" alt="extract-revamped：按 C-n 後的選擇器，在 60% 的彈出視窗中"><br><sub>按 <code>C-n</code> 後的選擇器，在 60% 的彈出視窗中，來自 <code>stills.tape</code></sub></td>
+<td width="50%" valign="top"><img src="screens/filters.png" alt="extract-revamped：最小長度、倒序和兩個已標記的片段"><br><sub>最小長度、倒序和兩個已標記的片段，來自 <code>stills.tape</code></sub></td>
+</tr>
+<tr>
+<td width="50%" valign="top"><img src="screens/all-panes.png" alt="extract-revamped：@extract_revamped_scope all-panes 讀取另一個窗格"><br><sub><code>@extract_revamped_scope all-panes</code> 讀取另一個窗格，來自 <code>stills.tape</code></sub></td>
+<td width="50%" valign="top"><img src="screens/doctor-popup.png" alt="extract-revamped：doctor 鍵"><br><sub>doctor 鍵，來自 <code>stills.tape</code></sub></td>
+</tr>
+<tr>
+<td width="50%" valign="top"><img src="screens/menu.png" alt="extract-revamped：選單"><br><sub>選單，來自 <code>stills.tape</code></sub></td>
+<td width="50%" valign="top"><img src="screens/doctor.png" alt="extract-revamped：doctor"><br><sub><code>doctor</code>，來自 <code>stills.tape</code></sub></td>
+</tr>
+<tr>
+<td width="50%" valign="top"><img src="screens/list.png" alt="extract-revamped：list"><br><sub><code>list</code>，來自 <code>stills.tape</code></sub></td>
+<td width="50%" valign="top"><img src="screens/json.png" alt="extract-revamped：list --json"><br><sub><code>list --json</code>，來自 <code>stills.tape</code></sub></td>
+</tr>
+<tr>
+<td width="50%" valign="top"><img src="screens/plain-menu.png" alt="extract-revamped：沒有 gum 的選單"><br><sub>沒有 gum 的選單，來自 <code>stills.tape</code></sub></td>
+<td width="50%" valign="top"><img src="screens/plain-apply.png" alt="extract-revamped：從選單執行 apply"><br><sub>從選單執行 <code>apply</code>，來自 <code>stills.tape</code></sub></td>
+</tr>
+<tr>
+<td width="50%" valign="top"><img src="screens/version.png" alt="extract-revamped：版本"><br><sub>版本，來自 <code>stills.tape</code></sub></td>
+<td width="50%" valign="top"><img src="screens/error.png" alt="extract-revamped：不明命令"><br><sub>不明命令，來自 <code>stills.tape</code></sub></td>
+</tr>
+<tr>
+<td width="50%" valign="top"><img src="screens/themes.png" alt="extract-revamped：六種主題下的標題"><br><sub>六種主題下的標題，來自 <code>themes.tape</code></sub></td>
+<td width="50%" valign="top"><img src="screens/help.png" alt="extract-revamped：說明頁"><br><sub>說明頁，來自 <code>help.tape</code></sub></td>
+</tr>
+<tr>
+<td width="50%" valign="top"><img src="screens/accent.png" alt="extract-revamped：來自 EXTRACT_REVAMPED_ACCENT 的強調色"><br><sub>來自 <code>EXTRACT_REVAMPED_ACCENT</code> 的強調色，來自 <code>stills.tape</code></sub></td>
+<td width="50%" valign="top"></td>
+</tr>
+</table>
 
-```mermaid
-graph LR
-    A[按鍵] --> B[display-popup]
-    B --> C[capture-pane]
-    C --> D[擷取器]
-    D --> E[fzf]
-    E --> F{操作}
-    F --> G[send-keys -l]
-    F --> H[開啟程式或編輯器]
-    F --> I[剪貼簿或 OSC 52]
-    F --> J[複製模式搜尋]
-```
+</details>
 
-入口腳本 [`extract-revamped.tmux`](extract-revamped.tmux) 把每個按鍵綁定到 `display-popup -E`，並以模式、來源窗格 ID 和操作為參數執行 [`src/extract.sh`](src/extract.sh)。該腳本以 `capture-pane` 讀取文字，執行 [`src/lib/extract/extract.sh`](src/lib/extract/extract.sh) 中的擷取器，再把候選項目傳給 fzf。insert 使用 `send-keys -l`，所以像 `Enter` 或 `C-c` 這類選中項目會以文字輸入，而不會當作按鍵觸發。插件路徑和模式都經 `printf '%q'` 轉義，因此插件目錄含空格或單引號時亦能正常運作。
+## 可攜性
+
+插件是 POSIX `sh`。CI 在下列每一行上執行全部測試。
+
+| Shell | 狀態 |
+|:------|:-------|
+| `dash`、macOS 上的 `/bin/sh` | 支援 |
+| `bash` 3.2 和 5.x、系統內建的 `zsh` 和 Homebrew 的 `zsh` | 支援 |
+
+| 系統 | 狀態 |
+|:-------|:-------|
+| macOS | Apple Silicon 和 Intel 上的 Tahoe，使用內建的工具、Homebrew 的 GNU 工具和 Homebrew 的 uutils |
+| Linux | x86_64 和 arm64 上的 Ubuntu 26.04，使用 GNU coreutils、uutils 和 BusyBox |
 
 ## 開發
 
 | 指令 | 執行內容 |
 |:--------|:-------------|
-| `make test` | [`test/`](test) 下的 bats 測試 |
-| `make lint` | 對所有 shell 檔案執行 warning 級別的 shellcheck |
-| `make coverage` | 在 Linux 上以 kcov 計算行覆蓋率，低於 95% 時失敗 |
+| `make fmt` | 對每個腳本執行 shfmt `-i 2` |
+| `make lint` | shfmt、ShellCheck、mandoc、yamllint 和 actionlint，零警告 |
+| `make test` | 在系統 `sh` 下執行 bats 測試 |
+| `make test-all` | 在每個已安裝的 shell 下執行測試，macOS 上包括 bash 和 zsh 的兩種版本 |
+| `make test-linux` | 在 Ubuntu 容器中執行測試 |
+| `make coverage` | 在這部 Mac 和 Ubuntu 容器中執行 bashcov，合併後以 100% 為門檻 |
+| `make screens` | 以 VHS 在 tmux 中從真實插件錄製上述畫面，在 macOS 上執行 |
+| `make install` | 把指令、man 手冊和自動完成安裝到 `PREFIX` 下 |
 
-擷取器及 [`src/lib/extract/dispatch.sh`](src/lib/extract/dispatch.sh) 中的輔助函數都是純函數，輸入文字，輸出候選項目。窗格擷取、fzf 和貼上都包裝在細小的包裝函數之後，因此大部分測試既不需要窗格，也不需要 fzf。
+提交遵循 Conventional Commits 格式，直接進入 `main`。`main` 上的 `ci` 通過後，`release.yml` 會執行 semantic-release：自上一個標籤以來的每個 `feat` 或 `fix` 都會發佈新版本，更新版本常數，並把說明寫入 [`CHANGELOG.md`](CHANGELOG.md)。
 
 ## 授權
 

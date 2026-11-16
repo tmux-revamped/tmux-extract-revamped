@@ -1,0 +1,251 @@
+.TH EXTRACT-REVAMPED 1 "2026-11-16" "extract-revamped" "User Commands"
+.SH NAME
+extract-revamped \- pick a token off the screen and type, open or copy it
+.SH SYNOPSIS
+.B extract-revamped
+.RI [ options ]
+.B apply
+.br
+.B extract-revamped
+.RB [ \-\-json ]
+.B list
+.br
+.B extract-revamped
+.RI [ options ]
+.BR insert | navigate | open | copy | choose
+.RI [ pane ]
+.br
+.B extract-revamped doctor
+.br
+.B extract-revamped version
+.br
+.B extract-revamped help
+.SH DESCRIPTION
+.B extract-revamped
+reads the text of a tmux pane, finds the tokens of one kind in it, such as
+URLs, paths, hashes or words, and hands them to fzf. The token you pick is
+typed at the cursor, found in copy-mode, opened, or copied. The entry point
+.B extract-revamped.tmux
+runs
+.B apply
+once when tmux loads the plugin, and every binding goes to tmux in one call.
+Each key opens a popup that runs one of the pick commands. Without
+.IR pane ,
+they read the client's active pane, the one under the popup, since tmux
+expands no format in a popup's command.
+.PP
+Run with no command on a terminal, it offers a menu.
+.SH COMMANDS
+.TP
+.B apply
+Bind the keys now.
+.TP
+.B list
+Print every binding apply would make, one per line.
+.TP
+.BI insert " [pane]"
+Pick a token and type it into
+.I pane
+with
+.BR "send-keys -l" ,
+so it arrives as literal text. Several marked tokens are typed joined by
+spaces.
+.TP
+.BI navigate " [pane]"
+Pick a token, put
+.I pane
+in copy-mode and search backward for it.
+.TP
+.BI open " [pane]"
+Pick a token and open it: a URL through xdg-open or open, a path in
+.B $EDITOR
+in a new window at the pane's folder, anything else typed.
+.TP
+.BI copy " [pane]"
+Pick a token and copy it with pbcopy, wl-copy, xclip or xsel, or as an OSC 52
+sequence.
+.TP
+.BI choose " [pane]"
+Pick in a chooser: Enter types, C-o opens, C-y copies, and C-n moves to the
+next mode in
+.BR @extract_revamped_modes .
+.TP
+.B doctor
+Print one row per dependency: tmux, fzf, the opener, the clipboard, base64,
+gum, a default key someone else holds, and the core tools. Exits 1 only when a
+required tool is missing.
+.TP
+.B version
+Print the version, then the tmux version.
+.TP
+.B help
+Print the help page.
+.SH OPTIONS
+.TP
+.B \-\-json
+.B list
+prints one JSON object.
+.TP
+.BI \-\-theme " name"
+Colours of the terminal interface:
+.BR kodougu ,
+.BR catppuccin\-mocha ,
+.BR catppuccin\-latte ,
+.BR dracula ,
+.BR nord ,
+.BR gruvbox ,
+.B tokyo\-night
+or
+.BR mono .
+The default is
+.BR kodougu .
+.TP
+.BI \-\- setting " value"
+Any tmux option below, named with dashes, such as
+.B \-\-mode
+or
+.BR \-\-min\-length .
+It also takes the form
+.IR \-\-setting = value .
+.SH ENVIRONMENT
+.TP
+.B EXTRACT_REVAMPED_SETTING
+Any tmux option below in capitals, such as
+.BR EXTRACT_REVAMPED_MODE .
+The command line wins over the environment, and the environment over the
+tmux option.
+.TP
+.B EXTRACT_REVAMPED_THEME
+The theme when
+.B \-\-theme
+is not given.
+.TP
+.B EXTRACT_REVAMPED_ACCENT
+A colour such as #CBA6F7 that replaces the accent of the theme.
+.TP
+.B KODOUGU_THEME
+The theme of every kodougu and tmux-revamped tool, when neither
+.B \-\-theme
+nor
+.B EXTRACT_REVAMPED_THEME
+is set.
+.TP
+.B KODOUGU_ACCENT
+The accent of every kodougu and tmux-revamped tool, when
+.B EXTRACT_REVAMPED_ACCENT
+is not set.
+.TP
+.B EDITOR
+The editor
+.B open
+starts for a path,
+.B vi
+when unset.
+.TP
+.B NO_COLOR
+Turns colour off in every theme.
+.SH TMUX OPTIONS
+An empty tmux option means its default.
+.TP
+.B @extract_revamped_key
+The prefix key of the insert picker, or
+.B none
+for no key. The default is
+.BR M-x ;
+a key someone else already bound is left alone and
+.B doctor
+reports it.
+.TP
+.BR @extract_revamped_navigate_key ", " @extract_revamped_open_key ", " @extract_revamped_copy_key ", " @extract_revamped_chooser_key ", " @extract_revamped_doctor_key
+The prefix keys of the navigate, open and copy pickers, the chooser and the
+doctor report. All unbound by default.
+.TP
+.B @extract_revamped_mode
+What to pick:
+.BR all ,
+.BR urls ,
+.BR paths ,
+.BR words ,
+.BR lines ,
+.BR shas ,
+.BR ipv4 ,
+.BR ipv6 ,
+.BR hex ,
+.BR uuids ,
+.BR numbers ,
+.BR quoted ,
+.B bracketed
+or
+.BR custom .
+The default is
+.BR all .
+.TP
+.B @extract_revamped_modes
+The modes C-n cycles in the chooser. The default is
+.BR "all urls paths words lines" .
+.TP
+.B @extract_revamped_scope
+The text to read:
+.B pane
+for the pane the key was pressed in,
+.B all-panes
+for every pane of its window, or
+.B last-log
+for the newest file in the log folder. The default is
+.BR pane .
+.TP
+.B @extract_revamped_log_dir
+The folder
+.B last-log
+reads. The default is
+.IR ~/.tmux/logging-revamped .
+.TP
+.B @extract_revamped_custom_regex
+The extended regex of the custom mode.
+.TP
+.B @extract_revamped_min_length
+Drop tokens shorter than this. The default is
+.BR 0 .
+.TP
+.B @extract_revamped_reverse
+.B 1
+puts the last match on screen first. The default is
+.BR 0 .
+.TP
+.B @extract_revamped_multi
+.B 1
+lets fzf mark several tokens. The default is
+.BR 0 .
+.TP
+.B @extract_revamped_osc52
+.B 1
+copies with an OSC 52 sequence instead of a clipboard tool. The default is
+.BR 0 .
+.TP
+.B @extract_revamped_frecency
+.B 1
+puts recent picks first and keeps the last 20 in
+.BR @extract_revamped_recent .
+The default is
+.BR 0 .
+.TP
+.B @extract_revamped_lines
+Scrollback lines read above the screen. The default is
+.BR 200 .
+.TP
+.BR @extract_revamped_popup_width ", " @extract_revamped_popup_height
+The popup size. The defaults are
+.B 80%
+and
+.BR 60% .
+.TP
+.B @revamped_theme
+The theme of every tmux-revamped tool, when nothing else sets one. The default
+is
+.BR kodougu .
+.SH EXIT STATUS
+0 on success, 1 on any failure.
+.SH SEE ALSO
+.BR tmux (1),
+.BR fzf (1),
+.BR gum (1)

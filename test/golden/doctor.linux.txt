@@ -1,0 +1,12 @@
+$ extract-revamped doctor
+tmux               ok       <path>, 3.8
+fzf                ok       <path>
+opener             warn     open needs xdg-open or open
+clipboard          warn     copy needs pbcopy, wl-copy, xclip or xsel, or @extract_revamped_osc52
+base64             ok       <path>
+gum                ok       <path>
+awk                ok       <path>, <flavor>
+sed                ok       <path>, <flavor>
+grep               ok       <path>, <flavor>
+tr                 ok       <path>, <flavor>
+exit 0

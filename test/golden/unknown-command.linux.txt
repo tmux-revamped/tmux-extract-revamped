@@ -1,0 +1,3 @@
+$ extract-revamped frobnicate
+extract-revamped: unknown command 'frobnicate'. run 'extract-revamped help' for usage.
+exit 1

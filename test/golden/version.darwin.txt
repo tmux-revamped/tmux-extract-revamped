@@ -1,0 +1,4 @@
+$ extract-revamped version
+extract-revamped <version>
+tmux: 3.8
+exit 0

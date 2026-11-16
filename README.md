@@ -4,80 +4,57 @@
 
 <strong>Pick a URL, path, hash or any other token off the screen with fzf and type it at the cursor, in pure shell.</strong>
 
-English | [日本語](README.ja.md) | [简体中文](README.zh-Hans.md) | [繁體中文（香港）](README.zh-HK.md)
+English &nbsp;|&nbsp; [日本語](README.ja.md) &nbsp;|&nbsp; [简体中文](README.zh-Hans.md) &nbsp;|&nbsp; [繁體中文（香港）](README.zh-HK.md)
 
-[![family](https://img.shields.io/github/actions/workflow/status/tmux-revamped/tmux-extract-revamped/family.yml?branch=main&style=flat-square&label=family)](https://github.com/tmux-revamped/tmux-extract-revamped/actions/workflows/family.yml)
-[![tests](https://img.shields.io/github/actions/workflow/status/tmux-revamped/tmux-extract-revamped/tests.yml?branch=main&style=flat-square&label=tests)](https://github.com/tmux-revamped/tmux-extract-revamped/actions/workflows/tests.yml)
+[![ci](https://img.shields.io/github/actions/workflow/status/tmux-revamped/tmux-extract-revamped/ci.yml?branch=main&style=flat-square&label=ci)](https://github.com/tmux-revamped/tmux-extract-revamped/actions/workflows/ci.yml)
 [![release](https://img.shields.io/github/v/release/tmux-revamped/tmux-extract-revamped?style=flat-square&label=release)](https://github.com/tmux-revamped/tmux-extract-revamped/releases/latest)
 [![openssf scorecard](https://img.shields.io/ossf-scorecard/github.com/tmux-revamped/tmux-extract-revamped?style=flat-square&label=openssf%20scorecard)](https://scorecard.dev/viewer/?uri=github.com/tmux-revamped/tmux-extract-revamped)
 [![license](https://img.shields.io/github/license/tmux-revamped/tmux-extract-revamped?style=flat-square&label=license)](LICENSE)
 
 <p align="center">
-  <a href="#what-it-does">What it does</a> |
-  <a href="#requirements">Requirements</a> |
-  <a href="#installation">Installation</a> |
-  <a href="#usage">Usage</a> |
-  <a href="#configuration">Configuration</a> |
-  <a href="#key-bindings">Key bindings</a> |
-  <a href="#how-it-works">How it works</a> |
-  <a href="#development">Development</a>
+  <a href="#quick-start"><strong>Quick start</strong></a> &nbsp;|&nbsp;
+  <a href="#usage">Usage</a> &nbsp;|&nbsp;
+  <a href="#modes">Modes</a> &nbsp;|&nbsp;
+  <a href="#screens">Screens</a>
 </p>
 
 </div>
 
-**14** extraction modes, **5** actions on a pick, and every extractor is a grep, sed or awk pipeline with no Python.
+<p align="center">
+  <img src="screens/hero.gif" alt="extract-revamped picking a URL off a build log with fzf and typing it at the prompt" width="800">
+</p>
+
+```console
+$ EXTRACT_REVAMPED_OPEN_KEY=o extract-revamped list
+bind-key M-x display-popup -E -w 80% -h 60% '/home/user/.tmux/plugins/tmux-extract-revamped/bin/extract-revamped' insert '#{pane_id}'
+bind-key o display-popup -E -w 80% -h 60% '/home/user/.tmux/plugins/tmux-extract-revamped/bin/extract-revamped' open '#{pane_id}'
+```
+
+Press `prefix M-x` and a popup lists every URL, path and word on the screen in fzf. Pick one and it is typed at the cursor of the pane you were in, as literal text. Other keys open the token, copy it, or find it in copy-mode.
 
 ---
 
-## What it does
+## Quick start
 
-Press `prefix + M-x` and an fzf popup lists every URL, file path and word in the current pane. Type to filter, press `Enter`, and the pick is typed into the pane you came from as literal text.
+### Prerequisites
 
-The picker reads the visible screen plus 200 lines of scrollback by default. It can also read every pane in the window, or the newest capture written by [tmux-logging-revamped](https://github.com/tmux-revamped/tmux-logging-revamped).
+| Tool | Version | Used for |
+|:-----|:--------|:---------|
+| tmux | 3.2 or later | the popup |
+| fzf | any | the picker; `doctor` reports it missing |
+| opener | optional | `open` on macOS or `xdg-open` on Linux, for URLs |
+| clipboard tool | optional | `pbcopy` on macOS, `wl-copy`, `xclip` or `xsel` on Linux, or OSC 52 through `base64` |
+| gum | optional | the menu, tables and colours of `extract-revamped`; without it every command prints plain text |
 
-| Mode | Extracts |
-|:-----|:---------|
-| `all` | URLs, then paths, then words, with duplicates removed |
-| `urls` | `http`, `https`, `ftp` and `file` URLs, and email addresses |
-| `paths` | absolute, `~/`, `./`, `../` and relative paths |
-| `words` | every whitespace-separated token |
-| `lines` | every non-blank line, trimmed |
-| `shas` | hex object names of 7 to 40 characters that contain at least one letter |
-| `ipv4` | dotted-quad addresses with every octet at most 255 |
-| `ipv6` | full and `::`-compressed IPv6 addresses |
-| `color` | CSS hex colors: `#rgb`, `#rgba`, `#rrggbb`, `#rrggbbaa` |
-| `uuid` | canonical 8-4-4-4-12 UUIDs |
-| `numbers` | integers and decimals with an optional sign |
-| `quoted` | the text inside single quotes, double quotes or backticks |
-| `bracketed` | the text inside `()`, `[]`, `{}` or `<>` |
-| `custom` | matches of the extended regex in `@extract_revamped_custom_regex` |
-
-URLs and paths lose trailing punctuation such as `.`, `,`, `)` and quotes. Every mode drops duplicates, and each extractor lists its matches in the order they first appear on screen.
-
-## Requirements
-
-| Requirement | Version or note |
-|:------------|:----------------|
-| tmux | 3.2 or later, for `display-popup` |
-| bash | 3.2 or later, so the macOS `/bin/bash` works |
-| [fzf](https://github.com/junegunn/fzf) | on `PATH`; without it the popup closes with nothing picked |
-| Opener, optional | `xdg-open` or `open`, for the open action on a URL |
-| Clipboard, optional | `pbcopy`, `wl-copy` or `xclip`, for the copy action |
-| `base64`, optional | for the copy action over OSC 52 |
-
-CI runs the suite on Linux x86_64 and arm64 with GNU and uutils coreutils, and on macOS Apple Silicon and Intel with the system BSD tools, GNU coreutils and uutils coreutils.
-
-## Installation
-
-With [TPM](https://github.com/tmux-plugins/tpm), add the plugin to `~/.tmux.conf` and press `prefix + I`:
+### Install
 
 ```tmux
 set -g @plugin 'tmux-revamped/tmux-extract-revamped'
 ```
 
-Without TPM, clone the repository and run the entrypoint from `~/.tmux.conf`:
+Then press `prefix + I`. Without TPM, clone the repository and run its entry point from `~/.tmux.conf`:
 
-```sh
+```bash
 git clone https://github.com/tmux-revamped/tmux-extract-revamped ~/.tmux/plugins/tmux-extract-revamped
 ```
 
@@ -85,103 +62,163 @@ git clone https://github.com/tmux-revamped/tmux-extract-revamped ~/.tmux/plugins
 run-shell ~/.tmux/plugins/tmux-extract-revamped/extract-revamped.tmux
 ```
 
-## Usage
+`make install` in the clone also puts `extract-revamped` in `~/.local/bin`, with its man page and completions under `~/.local/share`.
 
-`prefix + M-x` opens the picker in the default mode. The other actions stay unbound until you give each one a key:
+### Verify
 
-```tmux
-set -g @extract_revamped_open_key 'M-o'
-set -g @extract_revamped_copy_key 'M-y'
-set -g @extract_revamped_chooser_key 'M-u'
+```bash
+~/.tmux/plugins/tmux-extract-revamped/bin/extract-revamped doctor
 ```
 
-| Action | What happens to the pick |
-|:-------|:-------------------------|
-| insert | typed into the source pane; this is what `prefix + M-x` does |
-| navigate | the source pane enters copy-mode and searches backward for the pick, matched literally |
-| open | a URL goes to `xdg-open` or `open`, a path opens in `$EDITOR` in a new window started in the source pane's directory, anything else is typed |
-| copy | goes to `pbcopy`, `wl-copy` or `xclip`, or out as an OSC 52 sequence when `@extract_revamped_osc52` is `1` |
-| chooser | one popup for all of them: `ctrl-n` switches to the next mode in `@extract_revamped_modes`, `ctrl-o` opens, `ctrl-y` copies, `Enter` inserts |
-| doctor | prints whether fzf, an opener, a clipboard tool and `base64` are present, and waits for `Enter` |
-
-With `@extract_revamped_multi` set to `1`, and always in the chooser, `Tab` marks several candidates. Insert types them joined by single spaces, copy copies all of them, and open acts on the first one.
-
-## Configuration
-
-| Option | Default | Meaning |
-|:-------|:--------|:--------|
-| `@extract_revamped_key` | `M-x` | key that opens the picker; an empty value keeps `M-x` |
-| `@extract_revamped_navigate_key` | unset | key for the navigate action |
-| `@extract_revamped_open_key` | unset | key for the open action |
-| `@extract_revamped_copy_key` | unset | key for the copy action |
-| `@extract_revamped_chooser_key` | unset | key for the in-popup chooser |
-| `@extract_revamped_doctor_key` | unset | key for the doctor report |
-| `@extract_revamped_mode` | `all` | mode every key starts in, read when the plugin loads |
-| `@extract_revamped_modes` | `all urls paths words lines` | modes `ctrl-n` cycles through in the chooser |
-| `@extract_revamped_scope` | `pane` | text to read: `pane`, `all-panes` for every pane in the window, or `last-log` for the newest file in `@logging_revamped_path` |
-| `@extract_revamped_custom_regex` | unset | extended regex for the `custom` mode |
-| `@extract_revamped_min_length` | `0` | drop candidates shorter than this many characters |
-| `@extract_revamped_reverse` | `0` | `1` reverses the list so the last match on screen comes first |
-| `@extract_revamped_multi` | `0` | `1` lets fzf mark several candidates |
-| `@extract_revamped_osc52` | `0` | `1` makes copy emit OSC 52 instead of calling a clipboard tool |
-| `@extract_revamped_frecency` | `0` | `1` moves recently picked candidates to the top |
-| `@extract_revamped_lines` | `200` | lines of scrollback read above the visible screen |
-| `@extract_revamped_popup_width` | `80%` | popup width |
-| `@extract_revamped_popup_height` | `60%` | popup height |
-
-`last-log` reads `@logging_revamped_path`, which defaults to `~/.tmux/logging-revamped`.
-
-### Internal state
-
-The plugin manages this option itself. Do not set it.
-
-| Option | Holds |
-|:-------|:------|
-| `@extract_revamped_recent` | up to 20 recent picks, newest first, one per line, written and read only while `@extract_revamped_frecency` is `1` |
-
-## Key bindings
+## Usage
 
 | Key | Action | Default |
 |:----|:-------|:--------|
-| `prefix + M-x` | picker, insert action | bound |
-| `@extract_revamped_navigate_key` | picker, navigate action | unbound |
-| `@extract_revamped_open_key` | picker, open action | unbound |
-| `@extract_revamped_copy_key` | picker, copy action | unbound |
-| `@extract_revamped_chooser_key` | chooser popup | unbound |
-| `@extract_revamped_doctor_key` | doctor report | unbound |
+| `prefix M-x` | Pick a token and type it at the cursor | bound |
+| `@extract_revamped_navigate_key` | Pick a token and find it in copy-mode | unbound |
+| `@extract_revamped_open_key` | Pick a token and open it: a URL in the browser, a path in `$EDITOR` in a new window, anything else typed | unbound |
+| `@extract_revamped_copy_key` | Pick a token and copy it | unbound |
+| `@extract_revamped_chooser_key` | Pick in a chooser: `Enter` types, `C-o` opens, `C-y` copies, `C-n` moves to the next mode | unbound |
+| `@extract_revamped_doctor_key` | The doctor report in a popup | unbound |
 
-`M-x` is this plugin's slot in the family key allocation. Version 2.0.0 moved it from `Tab`, which tmux 3.8 binds by default. To keep the old key:
+`M-x` is this plugin's slot in the family key allocation. When you already bound `prefix M-x` yourself, the plugin leaves it alone and `doctor` says so; set `@extract_revamped_key` to another key, or to `none` for no key.
 
-```tmux
-set -g @extract_revamped_key 'Tab'
-```
+| Command | What it does |
+|:--------|:-------------|
+| `extract-revamped apply` | Binds the keys now; the entry point runs it when tmux loads the plugin |
+| `extract-revamped list` | Prints every binding apply would make; `--json` prints one object |
+| `extract-revamped insert`, `navigate`, `open`, `copy`, `choose` `PANE` | Run a picker on a pane; the keys run these in a popup |
+| `extract-revamped doctor` | One row per dependency, a default key someone else holds included |
+| `extract-revamped version` | The version, then the tmux version |
+| `extract-revamped help` | The help page; `man extract-revamped` documents the same commands and settings |
+| `extract-revamped` | On a terminal, a menu |
 
-## How it works
+| tmux option | Default | Meaning |
+|:------------|:--------|:--------|
+| `@extract_revamped_key` | `M-x` | Prefix key of the insert picker; `none` for no key |
+| `@extract_revamped_mode` | `all` | What to pick, one of the modes below |
+| `@extract_revamped_modes` | `all urls paths words lines` | Modes `C-n` cycles in the chooser |
+| `@extract_revamped_scope` | `pane` | Text to read: `pane`, `all-panes` of the window, or `last-log`, the newest file in the log folder |
+| `@extract_revamped_log_dir` | `~/.tmux/logging-revamped` | Folder `last-log` reads |
+| `@extract_revamped_custom_regex` | none | Extended regex of the `custom` mode |
+| `@extract_revamped_min_length` | `0` | Drop tokens shorter than this |
+| `@extract_revamped_reverse` | `0` | `1` puts the last match on screen first |
+| `@extract_revamped_multi` | `0` | `1` lets fzf mark several tokens with `Tab`; insert types them joined by spaces |
+| `@extract_revamped_osc52` | `0` | `1` copies with an OSC 52 sequence instead of a clipboard tool |
+| `@extract_revamped_frecency` | `0` | `1` puts recent picks first, keeping the last 20 in `@extract_revamped_recent` |
+| `@extract_revamped_lines` | `200` | Scrollback lines read above the screen |
+| `@extract_revamped_popup_width` | `80%` | Popup width |
+| `@extract_revamped_popup_height` | `60%` | Popup height |
 
-```mermaid
-graph LR
-    A[key press] --> B[display-popup]
-    B --> C[capture-pane]
-    C --> D[extractor]
-    D --> E[fzf]
-    E --> F{action}
-    F --> G[send-keys -l]
-    F --> H[opener or editor]
-    F --> I[clipboard or OSC 52]
-    F --> J[copy-mode search]
-```
+The settings are read when a key runs, so a change takes effect on the next pick; the keys themselves take effect after `extract-revamped apply` or a config reload. Every option is also a command option with dashes, such as `--min-length 4`, and an environment variable, such as `EXTRACT_REVAMPED_MIN_LENGTH`; the command line wins over the environment, and the environment over the tmux option. An empty tmux option means its default.
 
-The entrypoint [`extract-revamped.tmux`](extract-revamped.tmux) binds each key to `display-popup -E` running [`src/extract.sh`](src/extract.sh) with the mode, the source pane id and the action. The script reads the text with `capture-pane`, runs the extractor from [`src/lib/extract/extract.sh`](src/lib/extract/extract.sh), and pipes the candidates into fzf. Insert uses `send-keys -l`, so a pick such as `Enter` or `C-c` is typed as text rather than pressed. The plugin path and mode are quoted with `printf '%q'`, so a plugin directory with a space or a single quote still works.
+<a id="modes"></a>
+
+## Modes
+
+| Mode | Picks |
+|:-----|:------|
+| `all` | URLs, paths and words, without repeats |
+| `urls` | `http`, `https`, `ftp` and `file` URLs, and email addresses, with trailing punctuation removed |
+| `paths` | Absolute, home, `./` and `../` paths, and any word with a slash |
+| `words` | Every word between blanks |
+| `lines` | Every non-blank line, trimmed |
+| `shas` | Hex object names of 7 to 40 characters that hold a letter |
+| `ipv4`, `ipv6` | Addresses, with out-of-range IPv4 octets dropped |
+| `hex` | Hex colours such as `#a1b2c3` |
+| `uuids` | Canonical UUIDs |
+| `numbers` | Integers and decimals, with their sign |
+| `quoted` | Text inside double quotes, single quotes or backticks |
+| `bracketed` | Text inside parentheses, square, curly or angle brackets |
+| `custom` | Matches of `@extract_revamped_custom_regex` |
+
+A picked token is typed with `send-keys -l`, so a token such as `Enter` is typed as text rather than pressed. Open starts the editor with the path as one argument, from the folder of the pane the key was pressed in.
+
+<a id="screens"></a>
+
+## Screens
+
+<details>
+<summary>Every screen, recorded inside a real tmux with <code>make screens</code>, with each key on the status line</summary>
+<br>
+
+<table>
+<tr>
+<td width="50%" valign="top"><img src="screens/picker.png" alt="extract-revamped: prefix M-x lists every token on the screen"><br><sub><code>prefix M-x</code> lists every token on the screen, from <code>hero.tape</code></sub></td>
+<td width="50%" valign="top"><img src="screens/inserted.png" alt="extract-revamped: The picked URL typed at the prompt"><br><sub>The picked URL typed at the prompt, from <code>hero.tape</code></sub></td>
+</tr>
+<tr>
+<td width="50%" valign="top"><img src="screens/urls.png" alt="extract-revamped: @extract_revamped_mode urls lists URLs only"><br><sub><code>@extract_revamped_mode urls</code> lists URLs only, from <code>hero.tape</code></sub></td>
+<td width="50%" valign="top"><img src="screens/navigate.png" alt="extract-revamped: The navigate key finds the token in copy-mode"><br><sub>The navigate key finds the token in copy-mode, from <code>stills.tape</code></sub></td>
+</tr>
+<tr>
+<td width="50%" valign="top"><img src="screens/open.png" alt="extract-revamped: The open key shows a path in the editor"><br><sub>The open key shows a path in the editor, from <code>stills.tape</code></sub></td>
+<td width="50%" valign="top"><img src="screens/copy.png" alt="extract-revamped: The copy key puts the token on the clipboard"><br><sub>The copy key puts the token on the clipboard, from <code>stills.tape</code></sub></td>
+</tr>
+<tr>
+<td width="50%" valign="top"><img src="screens/chooser.png" alt="extract-revamped: The chooser after C-n, in a 60% popup"><br><sub>The chooser after <code>C-n</code>, in a 60% popup, from <code>stills.tape</code></sub></td>
+<td width="50%" valign="top"><img src="screens/filters.png" alt="extract-revamped: Minimum length, reverse order and two marked tokens"><br><sub>Minimum length, reverse order and two marked tokens, from <code>stills.tape</code></sub></td>
+</tr>
+<tr>
+<td width="50%" valign="top"><img src="screens/all-panes.png" alt="extract-revamped: @extract_revamped_scope all-panes reads the other pane"><br><sub><code>@extract_revamped_scope all-panes</code> reads the other pane, from <code>stills.tape</code></sub></td>
+<td width="50%" valign="top"><img src="screens/doctor-popup.png" alt="extract-revamped: The doctor key"><br><sub>The doctor key, from <code>stills.tape</code></sub></td>
+</tr>
+<tr>
+<td width="50%" valign="top"><img src="screens/menu.png" alt="extract-revamped: The menu"><br><sub>The menu, from <code>stills.tape</code></sub></td>
+<td width="50%" valign="top"><img src="screens/doctor.png" alt="extract-revamped: doctor"><br><sub><code>doctor</code>, from <code>stills.tape</code></sub></td>
+</tr>
+<tr>
+<td width="50%" valign="top"><img src="screens/list.png" alt="extract-revamped: list"><br><sub><code>list</code>, from <code>stills.tape</code></sub></td>
+<td width="50%" valign="top"><img src="screens/json.png" alt="extract-revamped: list --json"><br><sub><code>list --json</code>, from <code>stills.tape</code></sub></td>
+</tr>
+<tr>
+<td width="50%" valign="top"><img src="screens/plain-menu.png" alt="extract-revamped: The menu without gum"><br><sub>The menu without gum, from <code>stills.tape</code></sub></td>
+<td width="50%" valign="top"><img src="screens/plain-apply.png" alt="extract-revamped: apply from the menu"><br><sub><code>apply</code> from the menu, from <code>stills.tape</code></sub></td>
+</tr>
+<tr>
+<td width="50%" valign="top"><img src="screens/version.png" alt="extract-revamped: The version"><br><sub>The version, from <code>stills.tape</code></sub></td>
+<td width="50%" valign="top"><img src="screens/error.png" alt="extract-revamped: An unknown command"><br><sub>An unknown command, from <code>stills.tape</code></sub></td>
+</tr>
+<tr>
+<td width="50%" valign="top"><img src="screens/themes.png" alt="extract-revamped: The header in six themes"><br><sub>The header in six themes, from <code>themes.tape</code></sub></td>
+<td width="50%" valign="top"><img src="screens/help.png" alt="extract-revamped: The help page"><br><sub>The help page, from <code>help.tape</code></sub></td>
+</tr>
+<tr>
+<td width="50%" valign="top"><img src="screens/accent.png" alt="extract-revamped: An accent from EXTRACT_REVAMPED_ACCENT"><br><sub>An accent from <code>EXTRACT_REVAMPED_ACCENT</code>, from <code>stills.tape</code></sub></td>
+<td width="50%" valign="top"></td>
+</tr>
+</table>
+
+</details>
+
+## Portability
+
+The plugin is POSIX `sh`. CI runs every suite on each row below.
+
+| Shell | Status |
+|:------|:-------|
+| `dash`, `/bin/sh` on macOS | Supported |
+| `bash` 3.2 and 5.x, the system's `zsh` and Homebrew's | Supported |
+
+| System | Status |
+|:-------|:-------|
+| macOS | Tahoe on Apple Silicon and Intel, with the tools it ships, Homebrew's GNU tools and Homebrew's uutils |
+| Linux | Ubuntu 26.04 on x86_64 and arm64, with GNU coreutils, uutils and BusyBox |
 
 ## Development
 
 | Command | What it runs |
 |:--------|:-------------|
-| `make test` | the bats suite under [`test/`](test) |
-| `make lint` | shellcheck at warning severity on every shell file |
-| `make coverage` | kcov line coverage on Linux, failing below 95% |
+| `make fmt` | shfmt `-i 2` on every script |
+| `make lint` | shfmt, ShellCheck, mandoc, yamllint and actionlint, at zero findings |
+| `make test` | The bats suites under the system `sh` |
+| `make test-all` | The suites under every installed shell, both builds of bash and zsh on macOS |
+| `make test-linux` | The suites in an Ubuntu container |
+| `make coverage` | bashcov on this Mac and in the Ubuntu container, merged and gated at 100 percent |
+| `make screens` | The screens above, recorded from the real plugin inside tmux with VHS, on macOS |
+| `make install` | The command, its man page and completions under `PREFIX` |
 
-The extractors and the helpers in [`src/lib/extract/dispatch.sh`](src/lib/extract/dispatch.sh) are pure functions, text in and candidates out. The pane capture, fzf and the paste sit behind small wrappers, so most tests need no pane and no fzf.
+Commits follow the conventional commit format and go straight to `main`. After a green `ci` run on `main`, `release.yml` runs semantic-release: every `feat` or `fix` since the last tag publishes a release, stamps the version constant and adds the notes to [`CHANGELOG.md`](CHANGELOG.md).
 
 ## License
 

@@ -1,0 +1,76 @@
+$ extract-revamped help
+extract-revamped - pick a token off the screen and type, open or copy it
+
+usage:
+  extract-revamped apply            bind the keys now
+  extract-revamped list             print every binding apply would make
+  extract-revamped insert [PANE]    pick a token and type it into PANE
+  extract-revamped navigate [PANE]  pick a token and find it in PANE's
+                                    copy-mode
+  extract-revamped open [PANE]      pick a token and open it: a URL in the
+                                    browser, a path in $EDITOR
+  extract-revamped copy [PANE]      pick a token and copy it
+  extract-revamped choose [PANE]    pick in a chooser: Enter types, C-o opens,
+                                    C-y copies, C-n changes the mode
+  extract-revamped doctor           check this machine
+  extract-revamped version          print the version
+  extract-revamped help             print this page
+
+options:
+  --json           list prints one JSON object
+  --theme NAME     the look: kodougu, catppuccin-mocha, catppuccin-latte,
+                   dracula, nord, gruvbox, tokyo-night or mono
+  --SETTING VALUE  any tmux option below, named with dashes, such as
+                   --mode urls or --min-length 4
+
+environment:
+  EXTRACT_REVAMPED_SETTING  any tmux option below in capitals, such as
+                            EXTRACT_REVAMPED_MODE
+  EXTRACT_REVAMPED_THEME    the look, when --theme is not given
+  EXTRACT_REVAMPED_ACCENT   a colour such as #CBA6F7 for the accent
+  KODOUGU_THEME             the family look, when neither is given
+  KODOUGU_ACCENT            the family accent, when the tool's is unset
+  NO_COLOR                  turn colour off
+
+tmux options:
+  @extract_revamped_key            prefix key of the picker; none for no key
+                                   (M-x)
+  @extract_revamped_navigate_key   key of the navigate picker (unbound)
+  @extract_revamped_open_key       key of the open picker (unbound)
+  @extract_revamped_copy_key       key of the copy picker (unbound)
+  @extract_revamped_chooser_key    key of the chooser (unbound)
+  @extract_revamped_doctor_key     key of the doctor report (unbound)
+  @extract_revamped_mode           what to pick: all, urls, paths, words,
+                                   lines, shas, ipv4, ipv6, hex, uuids,
+                                   numbers, quoted, bracketed or custom (all)
+  @extract_revamped_modes          modes C-n cycles in the chooser
+                                   (all urls paths words lines)
+  @extract_revamped_scope          pane, all-panes or last-log (pane)
+  @extract_revamped_log_dir        folder last-log reads the newest file of
+                                   (~<path>
+  @extract_revamped_custom_regex   extended regex of the custom mode (none)
+  @extract_revamped_min_length     drop shorter tokens (0)
+  @extract_revamped_reverse        1 puts the last match first (0)
+  @extract_revamped_multi          1 lets fzf mark several tokens (0)
+  @extract_revamped_osc52          1 copies with OSC 52 (0)
+  @extract_revamped_frecency       1 puts recent picks first (0)
+  @extract_revamped_lines          scrollback lines read above the screen
+                                   (200)
+  @extract_revamped_popup_width    popup width (80%)
+  @extract_revamped_popup_height   popup height (60%)
+  @revamped_theme                  the family look (kodougu)
+
+notes:
+  The entry point runs apply once when tmux loads the plugin, and every
+  binding goes to tmux in one call. A key opens a popup that runs one of the
+  pick commands; without PANE they read the client's active pane, the one
+  under the popup, since tmux expands no format in a popup's command. The
+  settings are read when a pick runs. A picked token is typed with
+  send-keys -l, so it reaches the pane as literal text. With frecency on, the
+  last 20 picks are kept in @extract_revamped_recent.
+
+examples:
+  extract-revamped list
+  extract-revamped --mode urls insert %1
+  extract-revamped doctor
+exit 0

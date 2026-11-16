@@ -1,0 +1,4 @@
+$ extract-revamped list
+bind-key M-x display-popup -E -w 80% -h 60% '<path> insert
+bind-key n display-popup -E -w 80% -h 60% '<path> navigate
+exit 0
