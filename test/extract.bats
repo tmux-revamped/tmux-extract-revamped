@@ -381,15 +381,16 @@ refuse() {
   [[ "${output}" == "[][M-x]" ]]
 }
 
-@test "extract - the tool path is quoted for the shell with its hashes doubled" {
+@test "extract - the tool path is quoted for the shell and carries no hash" {
   # Arrange
   export PROBE_LIB="/tmp/it's #1/lib"
 
   # Act
-  lib_run extract 'REVAMPED_LIB="${PROBE_LIB}"; extract_revamped_tool'
+  lib_run extract 'REVAMPED_LIB="${PROBE_LIB}"; quoted=$(extract_revamped_tool); printf "%s\n" "${quoted}"; eval "printf \"%s\\n\" ${quoted}"'
 
   # Assert
-  [[ "${output}" == "'/tmp/it'\\''s ##1/bin/extract-revamped'" ]]
+  [[ "${lines[0]}" == "'/tmp/it'\\''s '\"\$(printf '%b' '\\0043')\"'1/bin/extract-revamped'" ]] || false
+  [[ "${lines[1]}" == "/tmp/it's #1/bin/extract-revamped" ]]
 }
 
 @test "extract - apply sends every binding to tmux in one call" {
@@ -782,4 +783,44 @@ EOF
   [[ "${output}" == "0" ]]
   run grep -c '^bind-key\|^set-option' "${REVAMPED_TEST_TMUX_ARGV}"
   [[ "${output}" -ge 1 ]]
+}
+
+@test "extract - a quoted value survives the shell with its hash, quote and spaces, and carries no hash" {
+  # Arrange
+  export PROBE_TEXT="a#b it's #1  two"
+
+  # Act
+  lib_run extract 'quoted=$(extract_revamped_quote "${PROBE_TEXT}"); printf "%s\n" "${quoted}"; eval "printf \"%s\\n\" ${quoted}"'
+
+  # Assert
+  [[ "${lines[0]}" != *"#"* ]]
+  [[ "${lines[1]}" == "a#b it's #1  two" ]]
+}
+
+@test "extract - what a pick reads rides on the picker keys when it came from the command line or environment" {
+  # Arrange
+  option open_key o
+  export EXTRACT_REVAMPED_SCOPE=all-panes EXTRACT_REVAMPED_MODE=urls EXTRACT_REVAMPED_POPUP_WIDTH=50% EXTRACT_REVAMPED_CUSTOM_REGEX="id#[0-9]+"
+
+  # Act
+  lib_run extract 'extract_revamped_plan; extract_revamped_lines_of_plan'
+
+  # Assert
+  [[ "${lines[0]}" == "bind-key M-x display-popup -E -w 50% -h 60% '"*"/bin/extract-revamped' --mode 'urls' --scope 'all-panes' --custom-regex 'id'\"\$(printf '%b' '\\0043')\"'[0-9]+' insert" ]]
+  [[ "${lines[1]}" == *"/bin/extract-revamped' --mode 'urls' --scope 'all-panes' --custom-regex "*" open" ]]
+  [[ "${output}" != *"#"* ]]
+}
+
+@test "extract - a setting from a tmux option stays off the keys, and doctor carries none" {
+  # Arrange
+  option mode urls
+  option doctor_key D
+  export EXTRACT_REVAMPED_MIN_LENGTH=4
+
+  # Act
+  lib_run extract 'extract_revamped_plan; extract_revamped_lines_of_plan'
+
+  # Assert
+  [[ "${lines[0]}" == *"/bin/extract-revamped' --min-length '4' insert" ]]
+  [[ "${lines[1]}" == *"/bin/extract-revamped' doctor; read -r extract_revamped_wait" ]]
 }

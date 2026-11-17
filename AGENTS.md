@@ -27,7 +27,8 @@ Guidance for anyone, human or agent, changing tmux-extract-revamped. What it is 
 ## Behaviour
 
 - `apply` reads every setting with one `tmux display-message` call and one `env` read, reads `list-keys -T prefix` once for the default key, builds the plan, and sends every binding to tmux in one call separated by `;`.
-- A key runs `display-popup -E` with one pick command and no pane, because tmux expands no format in a popup's command; the pick command reads the client's active pane, the one under the popup, and the settings when it runs, so a setting change needs no reload.
+- A key runs `display-popup -E` with one pick command and no pane, because tmux expands no format in a popup's command; the pick command reads the client's active pane, the one under the popup. A setting from a tmux option is read when the pick runs, so a change needs no reload; one `apply` got from the command line or the environment, of those in `EXTRACT_REVAMPED_PICK_NAMES`, rides on the picker keys as an option, since neither exists when tmux runs a key.
+- Everything placed in a popup's command goes through `extract_revamped_quote`, which single-quotes it and writes each `#` as `"$(printf '%b' '\0043')"`, so a path or a regex holding a hash reads the same whether or not the tmux running it expands formats there.
 - An empty tmux option means its default; `@extract_revamped_key` set to `none` binds no picker key.
 - A default key the person bound before the plugin loaded stays theirs, and `doctor` reports it.
 - The entry point clears every inherited `REVAMPED_` variable except the test switches, and every `EXTRACT_REVAMPED_*_LOADED` guard; every other global is assigned outright in the state file.

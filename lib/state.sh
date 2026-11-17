@@ -23,6 +23,7 @@ frecency	0
 lines	200
 popup_width	80%
 popup_height	60%'
+EXTRACT_REVAMPED_PICK_NAMES='mode modes scope log_dir custom_regex min_length reverse multi osc52 frecency lines'
 EXTRACT_REVAMPED_NAMES='key navigate_key open_key copy_key chooser_key doctor_key mode modes scope log_dir custom_regex min_length reverse multi osc52 frecency lines popup_width popup_height'
 EXTRACT_REVAMPED_S_key='M-x'
 EXTRACT_REVAMPED_S_navigate_key=''
@@ -49,5 +50,6 @@ EXTRACT_REVAMPED_RECENT_MAX=20
 EXTRACT_REVAMPED_CHOOSER_ROUNDS=12
 EXTRACT_REVAMPED_PLAN=""
 EXTRACT_REVAMPED_TOOL=""
+EXTRACT_REVAMPED_CARRIED=""
 EXTRACT_REVAMPED_TAKEN=""
 REVAMPED_LOG_NS=extract-revamped

@@ -64,10 +64,12 @@ notes:
   The entry point runs apply once when tmux loads the plugin, and every
   binding goes to tmux in one call. A key opens a popup that runs one of the
   pick commands; without PANE they read the client's active pane, the one
-  under the popup, since tmux expands no format in a popup's command. The
-  settings are read when a pick runs. A picked token is typed with
-  send-keys -l, so it reaches the pane as literal text. With frecency on, the
-  last 20 picks are kept in @extract_revamped_recent.
+  under the popup, since tmux expands no format in a popup's command. A
+  setting given as a tmux option is read when a pick runs; one given to apply
+  on the command line or in the environment rides on the keys it binds. A
+  picked token is typed with send-keys -l, so it reaches the pane as literal
+  text. With frecency on, the last 20 picks are kept in
+  @extract_revamped_recent.
 
 examples:
   extract-revamped list

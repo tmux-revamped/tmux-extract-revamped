@@ -75,8 +75,46 @@ PLAN
   tmux "$@"
 }
 
+extract_revamped_quote() {
+  printf '%s\n' "$1" | sed -e "s/'/'\\\\''/g" -e "s/#/'\"\$(printf '%b' '\\\\0043')\"'/g" -e "1s/^/'/" -e "\$s/\$/'/"
+}
+
 extract_revamped_tool() {
-  printf '%s\n' "${REVAMPED_LIB%/lib}/bin/extract-revamped" | sed -e "s/'/'\\\\''/g" -e 's/#/##/g' -e "1s/^/'/" -e "\$s/\$/'/"
+  extract_revamped_quote "${REVAMPED_LIB%/lib}/bin/extract-revamped"
+}
+
+extract_revamped_carried_rows() {
+  env | EXTRACT_REVAMPED_ROWS="${EXTRACT_REVAMPED_PICK_NAMES}" awk '
+    BEGIN {
+      count = split(ENVIRON["EXTRACT_REVAMPED_ROWS"], names, " ")
+      for (i = 1; i <= count; i++) { want["EXTRACT_REVAMPED_" toupper(names[i])] = i }
+    }
+    {
+      at = index($0, "=")
+      key = substr($0, 1, at - 1)
+      if (key in want) { value[want[key]] = substr($0, at + 1) }
+    }
+    END {
+      for (i = 1; i <= count; i++) {
+        if (value[i] == "") { continue }
+        option = names[i]
+        gsub(/_/, "-", option)
+        print option "\t" value[i]
+      }
+    }
+  '
+}
+
+extract_revamped_carried() {
+  extract_revamped_carried_out=""
+  extract_revamped_carried_list=$(extract_revamped_carried_rows)
+  while IFS='	' read -r extract_revamped_carried_name extract_revamped_carried_value; do
+    [ -n "${extract_revamped_carried_name}" ] || continue
+    extract_revamped_carried_out="${extract_revamped_carried_out} --${extract_revamped_carried_name} $(extract_revamped_quote "${extract_revamped_carried_value}")"
+  done <<EOF
+${extract_revamped_carried_list}
+EOF
+  printf '%s' "${extract_revamped_carried_out}"
 }
 
 extract_revamped_binding() {
@@ -96,20 +134,21 @@ extract_revamped_plan_main() {
   extract_revamped_plan_main_bound=$(extract_revamped_binding "${EXTRACT_REVAMPED_S_key}")
   # shellcheck disable=SC2034
   case "${extract_revamped_plan_main_bound}" in
-  "" | *extract-revamped*) extract_revamped_popup "${EXTRACT_REVAMPED_S_key}" "${EXTRACT_REVAMPED_TOOL} insert" ;;
+  "" | *extract-revamped*) extract_revamped_popup "${EXTRACT_REVAMPED_S_key}" "${EXTRACT_REVAMPED_TOOL}${EXTRACT_REVAMPED_CARRIED} insert" ;;
   *) EXTRACT_REVAMPED_TAKEN="${EXTRACT_REVAMPED_S_key}" ;;
   esac
 }
 
 extract_revamped_plan_action() {
   [ -n "$1" ] || return 0
-  extract_revamped_popup "$1" "${EXTRACT_REVAMPED_TOOL} $2"
+  extract_revamped_popup "$1" "${EXTRACT_REVAMPED_TOOL}${EXTRACT_REVAMPED_CARRIED} $2"
 }
 
 extract_revamped_plan() {
   extract_revamped_load
   EXTRACT_REVAMPED_PLAN=""
   EXTRACT_REVAMPED_TOOL=$(extract_revamped_tool)
+  EXTRACT_REVAMPED_CARRIED=$(extract_revamped_carried)
   extract_revamped_plan_main
   extract_revamped_plan_action "${EXTRACT_REVAMPED_S_navigate_key}" navigate
   extract_revamped_plan_action "${EXTRACT_REVAMPED_S_open_key}" open

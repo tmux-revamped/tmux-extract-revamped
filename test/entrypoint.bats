@@ -10,12 +10,15 @@ setup() {
   ROOT="$(cd "${BATS_TEST_DIRNAME}/.." && pwd)"
   setup_tmux_server
   PANE=$(tmux display-message -p -t test '#{pane_id}')
+  HOST="${TMUX_SOCKET}-host"
   mkdir -p "${BATS_TEST_TMPDIR}/stubs" "${BATS_TEST_TMPDIR}/home"
   tmux respawn-pane -k -t "${PANE}" "env -i PATH='${PATH}' HOME='${BATS_TEST_TMPDIR}/home' PS1='$ ' TERM=xterm sh"
   wait_for typed '$'
 }
 
 teardown() {
+  command tmux -S "${HOST}" kill-server 2>/dev/null || :
+  rm -f "${HOST}"
   teardown_tmux_server
 }
 
@@ -57,6 +60,29 @@ wait_for() {
   "$@"
 }
 
+attached() {
+  local clients
+  clients=$(tmux list-clients -F x 2>/dev/null)
+  [[ -n "${clients}" ]]
+}
+
+offered() {
+  printf '#!/bin/sh\ncat >"%s.tmp"\nmv -f "%s.tmp" "%s"\nhead -n 1 "%s"\n' "${BATS_TEST_TMPDIR}/fzf.offered" "${BATS_TEST_TMPDIR}/fzf.offered" "${BATS_TEST_TMPDIR}/fzf.offered" "${BATS_TEST_TMPDIR}/fzf.offered" >"${BATS_TEST_TMPDIR}/stubs/fzf"
+  chmod +x "${BATS_TEST_TMPDIR}/stubs/fzf"
+}
+
+offered_is() {
+  local now want
+  now=$(sort -u "${BATS_TEST_TMPDIR}/fzf.offered" 2>/dev/null)
+  want=$(sort -u <<<"$1")
+  [[ "${now}" == "${want}" ]]
+}
+
+attach_host() {
+  command tmux -S "${HOST}" -f /dev/null new-session -d -s host -x 100 -y 30 "env -u TMUX TERM=xterm-256color tmux -S '${TMUX_SOCKET}' attach-session -t test"
+  wait_for attached
+}
+
 @test "entrypoint - loading binds the picker on prefix M-x and nothing else" {
   # Arrange
   local key=M-x
@@ -84,20 +110,24 @@ wait_for() {
   [[ "${output}" == *"display-message mine"* ]]
 }
 
-@test "entrypoint - a checkout path with a space, a quote and a hash still runs from the popup command" {
+@test "entrypoint - a checkout path with a space, a quote and a hash still opens the picker from its key" {
   # Arrange
-  local copy="${BATS_TEST_TMPDIR}/it's #1 dir" command
+  local copy="${BATS_TEST_TMPDIR}/it's #1 dir" quoted
   mkdir -p "${copy}"
   cp -Rf "${ROOT}/bin" "${ROOT}/lib" "${ROOT}/extract-revamped.tmux" "${copy}/"
-  tmux set-option -g @extract_revamped_doctor_key D
-  command=$(TMUX="${TMUX_SOCKET},1,0" sh "${copy}/bin/extract-revamped" list)
-  command=$(sed -n 's/^bind-key D display-popup -E -w 80% -h 60% //p' <<<"${command}")
+  quoted=$(printf '%s' "${copy}" | sed -e "s/'/'\\\\''/g" -e 's/#/##/g')
+  tmux set-environment -g PATH "${BATS_TEST_TMPDIR}/stubs:${PATH}"
+  tmux run-shell "'${quoted}/extract-revamped.tmux'"
+  tmux send-keys -t "${PANE}" 'echo see https://example.com/odd' Enter
+  wait_for typed 'see https://example.com/odd'
+  answer 'https://example.com/odd'
+  attach_host
 
   # Act
-  run tmux run-shell "${command%doctor; read -r extract_revamped_wait}version"
+  command tmux -S "${HOST}" send-keys -t host C-b M-x
 
   # Assert
-  [[ "${output}" == "extract-revamped "* ]]
+  wait_for typed $'\n$ https://example.com/odd'
 }
 
 @test "entrypoint - git tracks the entry point and the tool as executable" {
@@ -198,26 +228,51 @@ wait_for() {
 
 @test "insert - pressing prefix M-x types the pick into the pane under the popup" {
   # Arrange
-  local host="${TMUX_SOCKET}-host"
   tmux set-environment -g PATH "${BATS_TEST_TMPDIR}/stubs:${PATH}"
   load_plugin "${ROOT}"
   tmux send-keys -t "${PANE}" 'echo see https://example.com/key' Enter
   wait_for typed 'see https://example.com/key'
   tmux set-option -g @extract_revamped_mode urls
   answer 'https://example.com/key'
-  command tmux -S "${host}" -f /dev/null new-session -d -s host -x 100 -y 30 "env -u TMUX TERM=xterm-256color tmux -S '${TMUX_SOCKET}' attach-session -t test"
-  wait_for attached
+  attach_host
 
   # Act
-  command tmux -S "${host}" send-keys -t host C-b M-x
+  command tmux -S "${HOST}" send-keys -t host C-b M-x
 
   # Assert
   wait_for typed $'\n$ https://example.com/key'
-  command tmux -S "${host}" kill-server
 }
 
-attached() {
-  local clients
-  clients=$(tmux list-clients -F x 2>/dev/null)
-  [[ -n "${clients}" ]]
+@test "insert - a mode given to apply on the command line reaches the picker the key opens" {
+  # Arrange
+  tmux set-environment -g PATH "${BATS_TEST_TMPDIR}/stubs:${PATH}"
+  tmux send-keys -t "${PANE}" 'echo see https://example.com/key' Enter
+  wait_for typed 'see https://example.com/key'
+  offered
+  tool --mode urls apply
+  attach_host
+
+  # Act
+  command tmux -S "${HOST}" send-keys -t host C-b M-x
+
+  # Assert
+  wait_for typed $'\n$ https://example.com/key'
+  run cat "${BATS_TEST_TMPDIR}/fzf.offered"
+  [[ "${output}" == "https://example.com/key" ]]
+}
+
+@test "insert - a regex holding a hash and a quote, given on the command line, reaches the picker" {
+  # Arrange
+  tmux set-environment -g PATH "${BATS_TEST_TMPDIR}/stubs:${PATH}"
+  tmux send-keys -t "${PANE}" "echo id#42 it\\'s id#7" Enter
+  wait_for typed "id#42 it's id#7"
+  offered
+  tool --mode custom --custom-regex "(id#[0-9]+|it's)" apply
+  attach_host
+
+  # Act
+  command tmux -S "${HOST}" send-keys -t host C-b M-x
+
+  # Assert
+  wait_for offered_is $'id#7\nit\'s\nid#42'
 }

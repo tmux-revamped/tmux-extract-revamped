@@ -32,7 +32,10 @@ once when tmux loads the plugin, and every binding goes to tmux in one call.
 Each key opens a popup that runs one of the pick commands. Without
 .IR pane ,
 they read the client's active pane, the one under the popup, since tmux
-expands no format in a popup's command.
+expands no format in a popup's command. A setting given as a tmux option is
+read when a pick runs; one given to
+.B apply
+on the command line or in the environment rides on the keys it binds.
 .PP
 Run with no command on a terminal, it offers a menu.
 .SH COMMANDS
