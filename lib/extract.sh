@@ -5,6 +5,10 @@ EXTRACT_REVAMPED_EXTRACT_LOADED=1
 
 # shellcheck source=SCRIPTDIR/state.sh
 . "${REVAMPED_LIB:?}/state.sh"
+# shellcheck source=SCRIPTDIR/patterns.sh
+. "${REVAMPED_LIB}/patterns.sh"
+# shellcheck source=SCRIPTDIR/hints.sh
+. "${REVAMPED_LIB}/hints.sh"
 # shellcheck source=SCRIPTDIR/platform.sh
 . "${REVAMPED_LIB}/platform.sh"
 # shellcheck source=SCRIPTDIR/command.sh
@@ -125,6 +129,23 @@ extract_revamped_popup() {
   extract_revamped_emit bind-key "$1" display-popup -E -w "${EXTRACT_REVAMPED_S_popup_width}" -h "${EXTRACT_REVAMPED_S_popup_height}" "$2"
 }
 
+extract_revamped_overlay() {
+  extract_revamped_overlay_command=$(printf '%s\n' "$2" | sed "s/'/'\\\\''/g")
+  extract_revamped_emit bind-key "$1" run-shell "tmux display-popup -c '#{client_name}' -E -B -x '##{popup_pane_left}' -y '##{popup_pane_bottom}' -w '#{pane_width}' -h '#{pane_height}' '${extract_revamped_overlay_command}'"
+}
+
+extract_revamped_borderless() {
+  tmux -V 2>/dev/null | awk '{ v = $2; sub(/^[a-z-]+/, "", v); split(v, part, "."); if (part[1] + 0 < 3 || (part[1] + 0 == 3 && part[2] + 0 < 3)) { old = 1 } } END { exit old }'
+}
+
+extract_revamped_plan_pick() {
+  if [ "${EXTRACT_REVAMPED_OVERLAY}" -eq 1 ]; then
+    extract_revamped_overlay "$1" "${EXTRACT_REVAMPED_TOOL}${EXTRACT_REVAMPED_CARRIED} --picker hints $2"
+    return 0
+  fi
+  extract_revamped_popup "$1" "${EXTRACT_REVAMPED_TOOL}${EXTRACT_REVAMPED_CARRIED} $2"
+}
+
 extract_revamped_plan_main() {
   EXTRACT_REVAMPED_TAKEN=""
   case "${EXTRACT_REVAMPED_S_key}" in
@@ -134,14 +155,14 @@ extract_revamped_plan_main() {
   extract_revamped_plan_main_bound=$(extract_revamped_binding "${EXTRACT_REVAMPED_S_key}")
   # shellcheck disable=SC2034
   case "${extract_revamped_plan_main_bound}" in
-  "" | *extract-revamped*) extract_revamped_popup "${EXTRACT_REVAMPED_S_key}" "${EXTRACT_REVAMPED_TOOL}${EXTRACT_REVAMPED_CARRIED} insert" ;;
+  "" | *extract-revamped*) extract_revamped_plan_pick "${EXTRACT_REVAMPED_S_key}" insert ;;
   *) EXTRACT_REVAMPED_TAKEN="${EXTRACT_REVAMPED_S_key}" ;;
   esac
 }
 
 extract_revamped_plan_action() {
   [ -n "$1" ] || return 0
-  extract_revamped_popup "$1" "${EXTRACT_REVAMPED_TOOL}${EXTRACT_REVAMPED_CARRIED} $2"
+  extract_revamped_plan_pick "$1" "$2"
 }
 
 extract_revamped_plan() {
@@ -149,11 +170,15 @@ extract_revamped_plan() {
   EXTRACT_REVAMPED_PLAN=""
   EXTRACT_REVAMPED_TOOL=$(extract_revamped_tool)
   EXTRACT_REVAMPED_CARRIED=$(extract_revamped_carried)
+  EXTRACT_REVAMPED_OVERLAY=0
+  [ "${EXTRACT_REVAMPED_S_picker}" != hints ] || ! extract_revamped_borderless || EXTRACT_REVAMPED_OVERLAY=1
   extract_revamped_plan_main
   extract_revamped_plan_action "${EXTRACT_REVAMPED_S_navigate_key}" navigate
   extract_revamped_plan_action "${EXTRACT_REVAMPED_S_open_key}" open
   extract_revamped_plan_action "${EXTRACT_REVAMPED_S_copy_key}" copy
-  extract_revamped_plan_action "${EXTRACT_REVAMPED_S_chooser_key}" choose
+  extract_revamped_plan_action "${EXTRACT_REVAMPED_S_edit_key}" edit
+  extract_revamped_plan_action "${EXTRACT_REVAMPED_S_run_key}" run
+  [ -z "${EXTRACT_REVAMPED_S_chooser_key}" ] || extract_revamped_popup "${EXTRACT_REVAMPED_S_chooser_key}" "${EXTRACT_REVAMPED_TOOL}${EXTRACT_REVAMPED_CARRIED} choose"
   [ -z "${EXTRACT_REVAMPED_S_doctor_key}" ] || extract_revamped_popup "${EXTRACT_REVAMPED_S_doctor_key}" "${EXTRACT_REVAMPED_TOOL} doctor; read -r extract_revamped_wait"
 }
 
@@ -263,6 +288,12 @@ extract_revamped_for() {
   numbers | nums) extract_revamped_numbers "$2" ;;
   quoted) extract_revamped_quoted "$2" ;;
   bracketed) extract_revamped_bracketed "$2" ;;
+  docker) extract_revamped_docker "$2" ;;
+  kubernetes) extract_revamped_kubernetes "$2" ;;
+  git-status) extract_revamped_git_status "$2" ;;
+  diff) extract_revamped_diff "$2" ;;
+  markdown) extract_revamped_markdown "$2" ;;
+  branches) extract_revamped_branches "$2" ;;
   custom) extract_revamped_custom "${EXTRACT_REVAMPED_S_custom_regex}" "$2" ;;
   *) extract_revamped_all "$2" ;;
   esac
@@ -418,6 +449,11 @@ extract_revamped_opener() {
   fi
 }
 
+extract_revamped_folder() {
+  extract_revamped_folder_dir=$(tmux display-message -p -t "$1" '#{pane_current_path}' 2>/dev/null) || extract_revamped_folder_dir=""
+  printf '%s\n' "${extract_revamped_folder_dir:-${PWD}}" | sed 's/#/##/g'
+}
+
 extract_revamped_open_path() {
   extract_revamped_open_path_file="$2"
   # shellcheck disable=SC2088
@@ -425,10 +461,26 @@ extract_revamped_open_path() {
   "~/"*) extract_revamped_open_path_file="${HOME}/${extract_revamped_open_path_file#"~/"}" ;;
   *) : ;;
   esac
-  extract_revamped_open_path_dir=$(tmux display-message -p -t "$1" '#{pane_current_path}' 2>/dev/null) || extract_revamped_open_path_dir=""
-  extract_revamped_open_path_dir=$(printf '%s\n' "${extract_revamped_open_path_dir:-${PWD}}" | sed 's/#/##/g')
+  extract_revamped_open_path_dir=$(extract_revamped_folder "$1")
   # shellcheck disable=SC2016
   tmux new-window -c "${extract_revamped_open_path_dir}" -- sh -c 'set -f; exec $1 "$2"' extract-revamped "${EDITOR:-vi}" "${extract_revamped_open_path_file}" 2>/dev/null || :
+}
+
+extract_revamped_command() {
+  if [ -z "${EXTRACT_REVAMPED_S_command}" ]; then
+    # shellcheck disable=SC2016
+    printf 'extract-revamped: no command to run, so nothing was started. set @extract_revamped_command, such as git show "$1".\n' >&2
+    return 1
+  fi
+  extract_revamped_command_dir=$(extract_revamped_folder "$1")
+  extract_revamped_command_picks="$2"
+  set -- new-window -c "${extract_revamped_command_dir}" -- sh -c "${EXTRACT_REVAMPED_S_command}" extract-revamped
+  while IFS= read -r extract_revamped_command_pick; do
+    [ -z "${extract_revamped_command_pick}" ] || set -- "$@" "${extract_revamped_command_pick}"
+  done <<EOF
+${extract_revamped_command_picks}
+EOF
+  tmux "$@" 2>/dev/null || :
 }
 
 extract_revamped_open() {
@@ -460,6 +512,11 @@ extract_revamped_act() {
     ;;
   open) extract_revamped_open "$2" "$3" ;;
   copy) extract_revamped_copy "$3" ;;
+  edit)
+    extract_revamped_act_first=$(extract_revamped_first "$3")
+    extract_revamped_open_path "$2" "${extract_revamped_act_first}"
+    ;;
+  run) extract_revamped_command "$2" "$3" ;;
   *)
     extract_revamped_act_text=$(extract_revamped_join "$3")
     tmux send-keys -t "$2" -l -- "${extract_revamped_act_text}"
@@ -482,7 +539,7 @@ extract_revamped_choose() {
     extract_revamped_choose_round=$((extract_revamped_choose_round + 1))
     extract_revamped_choose_items=$(extract_revamped_candidates "${extract_revamped_choose_mode}" "$2")
     [ -n "${extract_revamped_choose_items}" ] || return 0
-    extract_revamped_choose_out=$(printf '%s\n' "${extract_revamped_choose_items}" | fzf --no-sort --reverse --height=100% --multi --expect=ctrl-o,ctrl-y,ctrl-n --header "${extract_revamped_choose_mode}: Enter types, C-o opens, C-y copies, C-n next mode") || :
+    extract_revamped_choose_out=$(printf '%s\n' "${extract_revamped_choose_items}" | fzf --no-sort --reverse --height=100% --multi --expect=ctrl-o,ctrl-y,ctrl-e,ctrl-x,ctrl-n --header "${extract_revamped_choose_mode}: Enter types, C-o opens, C-y copies, C-e edits, C-x runs, C-n next mode") || :
     extract_revamped_choose_key=$(printf '%s\n' "${extract_revamped_choose_out}" | sed -n 1p)
     extract_revamped_choose_pick=$(printf '%s\n' "${extract_revamped_choose_out}" | sed 1d)
     [ -n "${extract_revamped_choose_pick}" ] || return 0
@@ -494,6 +551,14 @@ extract_revamped_choose() {
       ;;
     ctrl-y)
       extract_revamped_act copy "$1" "${extract_revamped_choose_pick}"
+      return 0
+      ;;
+    ctrl-e)
+      extract_revamped_act edit "$1" "${extract_revamped_choose_pick}"
+      return 0
+      ;;
+    ctrl-x)
+      extract_revamped_act run "$1" "${extract_revamped_choose_pick}"
       return 0
       ;;
     *)
@@ -517,6 +582,10 @@ extract_revamped_pick() {
   set -- "$1" "${extract_revamped_pick_pane}"
   extract_revamped_load
   [ "${EXTRACT_REVAMPED_S_frecency}" != 1 ] || EXTRACT_REVAMPED_S_recent=$(tmux show-option -gqv "${EXTRACT_REVAMPED_RECENT}" 2>/dev/null) || EXTRACT_REVAMPED_S_recent=""
+  if [ "${EXTRACT_REVAMPED_PICKER:-}" = hints ] && [ "$1" != choose ]; then
+    extract_revamped_hints "$1" "$2"
+    return 0
+  fi
   extract_revamped_pick_text=$(extract_revamped_gather "$2")
   if [ "$1" = choose ]; then
     extract_revamped_choose "$2" "${extract_revamped_pick_text}"

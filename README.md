@@ -78,7 +78,9 @@ run-shell ~/.tmux/plugins/tmux-extract-revamped/extract-revamped.tmux
 | `@extract_revamped_navigate_key` | Pick a token and find it in copy-mode | unbound |
 | `@extract_revamped_open_key` | Pick a token and open it: a URL in the browser, a path in `$EDITOR` in a new window, anything else typed | unbound |
 | `@extract_revamped_copy_key` | Pick a token and copy it | unbound |
-| `@extract_revamped_chooser_key` | Pick in a chooser: `Enter` types, `C-o` opens, `C-y` copies, `C-n` moves to the next mode | unbound |
+| `@extract_revamped_edit_key` | Pick a token and open it in `$EDITOR` in a new window, whatever it is | unbound |
+| `@extract_revamped_run_key` | Pick a token and run `@extract_revamped_command` on it in a new window | unbound |
+| `@extract_revamped_chooser_key` | Pick in a chooser: `Enter` types, `C-o` opens, `C-y` copies, `C-e` edits, `C-x` runs your command, `C-n` moves to the next mode | unbound |
 | `@extract_revamped_doctor_key` | The doctor report in a popup | unbound |
 
 `M-x` is this plugin's slot in the family key allocation. When you already bound `prefix M-x` yourself, the plugin leaves it alone and `doctor` says so; set `@extract_revamped_key` to another key, or to `none` for no key.
@@ -87,7 +89,7 @@ run-shell ~/.tmux/plugins/tmux-extract-revamped/extract-revamped.tmux
 |:--------|:-------------|
 | `extract-revamped apply` | Binds the keys now; the entry point runs it when tmux loads the plugin |
 | `extract-revamped list` | Prints every binding apply would make; `--json` prints one object |
-| `extract-revamped insert`, `navigate`, `open`, `copy`, `choose` `PANE` | Run a picker on a pane; the keys run these in a popup |
+| `extract-revamped insert`, `navigate`, `open`, `copy`, `edit`, `run`, `choose` `PANE` | Run a picker on a pane; the keys run these in a popup |
 | `extract-revamped doctor` | One row per dependency, a default key someone else holds included |
 | `extract-revamped version` | The version, then the tmux version |
 | `extract-revamped help` | The help page; `man extract-revamped` documents the same commands and settings |
@@ -96,11 +98,13 @@ run-shell ~/.tmux/plugins/tmux-extract-revamped/extract-revamped.tmux
 | tmux option | Default | Meaning |
 |:------------|:--------|:--------|
 | `@extract_revamped_key` | `M-x` | Prefix key of the insert picker; `none` for no key |
+| `@extract_revamped_picker` | `fzf` | `hints` draws a letter over each token on the pane itself and acts on the one whose letter you type; needs tmux 3.3 and takes effect after `extract-revamped apply` |
 | `@extract_revamped_mode` | `all` | What to pick, one of the modes below |
 | `@extract_revamped_modes` | `all urls paths words lines` | Modes `C-n` cycles in the chooser |
 | `@extract_revamped_scope` | `pane` | Text to read: `pane`, `all-panes` of the window, or `last-log`, the newest file in the log folder |
 | `@extract_revamped_log_dir` | `~/.tmux/logging-revamped` | Folder `last-log` reads |
 | `@extract_revamped_custom_regex` | none | Extended regex of the `custom` mode |
+| `@extract_revamped_command` | none | Shell command the run action starts in a new window at the pane's folder, with each pick as `"$1"`, `"$2"` and so on, such as `git show "$1"` |
 | `@extract_revamped_min_length` | `0` | Drop tokens shorter than this |
 | `@extract_revamped_reverse` | `0` | `1` puts the last match on screen first |
 | `@extract_revamped_multi` | `0` | `1` lets fzf mark several tokens with `Tab`; insert types them joined by spaces |
@@ -130,9 +134,17 @@ A setting given as a tmux option is read when a key runs, so a change takes effe
 | `numbers` | Integers and decimals, with their sign |
 | `quoted` | Text inside double quotes, single quotes or backticks |
 | `bracketed` | Text inside parentheses, square, curly or angle brackets |
+| `docker` | Container ids, image references such as `ghcr.io/acme/api:1.4.2`, and `sha256` digests |
+| `kubernetes` | Resource names such as `pod/web-0` and `deployment.apps/web`, and generated pod names such as `web-7d4b9c6f5-x2k9q` |
+| `git-status` | The files `git status` lists, in its long and short forms, both sides of a rename included |
+| `diff` | The files a diff names in its `diff --git`, `---` and `+++` lines |
+| `markdown` | The target of each Markdown link |
+| `branches` | Branch and tag names from `git status`, `git branch` and the decorations of `git log` |
 | `custom` | Matches of `@extract_revamped_custom_regex` |
 
 A picked token is typed with `send-keys -l`, so a token such as `Enter` is typed as text rather than pressed. Open starts the editor with the path as one argument, from the folder of the pane the key was pressed in.
+
+With `@extract_revamped_picker hints`, a key covers the pane with a borderless popup, draws a letter over the start of each token on the visible screen, and acts on the token whose letter you type, or two letters when the screen holds more than 26 tokens. Any other key closes it. Hints read the visible screen only, whatever `@extract_revamped_scope` says, and the chooser keeps fzf.
 
 <a id="screens"></a>
 
@@ -161,30 +173,41 @@ A picked token is typed with `send-keys -l`, so a token such as `Enter` is typed
 </tr>
 <tr>
 <td width="50%" valign="top"><img src="screens/all-panes.png" alt="extract-revamped: @extract_revamped_scope all-panes reads the other pane"><br><sub><code>@extract_revamped_scope all-panes</code> reads the other pane, from <code>stills.tape</code></sub></td>
+<td width="50%" valign="top"><img src="screens/modes.png" alt="extract-revamped: The git-status mode lists the files of a git status"><br><sub>The git-status mode lists the files of a git status, from <code>stills.tape</code></sub></td>
+</tr>
+<tr>
+<td width="50%" valign="top"><img src="screens/edit.png" alt="extract-revamped: The edit picker opens the pick in the editor"><br><sub>The edit picker opens the pick in the editor, from <code>stills.tape</code></sub></td>
+<td width="50%" valign="top"><img src="screens/run.png" alt="extract-revamped: The run picker starts your command on the pick"><br><sub>The run picker starts your command on the pick, from <code>stills.tape</code></sub></td>
+</tr>
+<tr>
+<td width="50%" valign="top"><img src="screens/hints.png" alt="extract-revamped: Letter hints drawn over the pane"><br><sub>Letter hints drawn over the pane, from <code>stills.tape</code></sub></td>
+<td width="50%" valign="top"><img src="screens/hints-typed.png" alt="extract-revamped: The token typed after its letter"><br><sub>The token typed after its letter, from <code>stills.tape</code></sub></td>
+</tr>
+<tr>
 <td width="50%" valign="top"><img src="screens/doctor-popup.png" alt="extract-revamped: The doctor key"><br><sub>The doctor key, from <code>stills.tape</code></sub></td>
-</tr>
-<tr>
 <td width="50%" valign="top"><img src="screens/menu.png" alt="extract-revamped: The menu"><br><sub>The menu, from <code>stills.tape</code></sub></td>
+</tr>
+<tr>
 <td width="50%" valign="top"><img src="screens/doctor.png" alt="extract-revamped: doctor"><br><sub><code>doctor</code>, from <code>stills.tape</code></sub></td>
-</tr>
-<tr>
 <td width="50%" valign="top"><img src="screens/list.png" alt="extract-revamped: list"><br><sub><code>list</code>, from <code>stills.tape</code></sub></td>
+</tr>
+<tr>
 <td width="50%" valign="top"><img src="screens/json.png" alt="extract-revamped: list --json"><br><sub><code>list --json</code>, from <code>stills.tape</code></sub></td>
-</tr>
-<tr>
 <td width="50%" valign="top"><img src="screens/plain-menu.png" alt="extract-revamped: The menu without gum"><br><sub>The menu without gum, from <code>stills.tape</code></sub></td>
+</tr>
+<tr>
 <td width="50%" valign="top"><img src="screens/plain-apply.png" alt="extract-revamped: apply from the menu"><br><sub><code>apply</code> from the menu, from <code>stills.tape</code></sub></td>
-</tr>
-<tr>
 <td width="50%" valign="top"><img src="screens/version.png" alt="extract-revamped: The version"><br><sub>The version, from <code>stills.tape</code></sub></td>
+</tr>
+<tr>
 <td width="50%" valign="top"><img src="screens/error.png" alt="extract-revamped: An unknown command"><br><sub>An unknown command, from <code>stills.tape</code></sub></td>
-</tr>
-<tr>
 <td width="50%" valign="top"><img src="screens/themes.png" alt="extract-revamped: The header in six themes"><br><sub>The header in six themes, from <code>themes.tape</code></sub></td>
-<td width="50%" valign="top"><img src="screens/help.png" alt="extract-revamped: The help page"><br><sub>The help page, from <code>help.tape</code></sub></td>
 </tr>
 <tr>
+<td width="50%" valign="top"><img src="screens/help.png" alt="extract-revamped: The help page"><br><sub>The help page, from <code>help.tape</code></sub></td>
 <td width="50%" valign="top"><img src="screens/accent.png" alt="extract-revamped: An accent from EXTRACT_REVAMPED_ACCENT"><br><sub>An accent from <code>EXTRACT_REVAMPED_ACCENT</code>, from <code>stills.tape</code></sub></td>
+</tr>
+<tr>
 <td width="50%" valign="top"></td>
 </tr>
 </table>

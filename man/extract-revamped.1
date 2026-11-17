@@ -12,7 +12,7 @@ extract-revamped \- pick a token off the screen and type, open or copy it
 .br
 .B extract-revamped
 .RI [ options ]
-.BR insert | navigate | open | copy | choose
+.BR insert | navigate | open | copy | edit | run | choose
 .RI [ pane ]
 .br
 .B extract-revamped doctor
@@ -68,9 +68,20 @@ in a new window at the pane's folder, anything else typed.
 Pick a token and copy it with pbcopy, wl-copy, xclip or xsel, or as an OSC 52
 sequence.
 .TP
+.BI edit " [pane]"
+Pick a token and open it in
+.B $EDITOR
+in a new window at the pane's folder, whatever kind of token it is.
+.TP
+.BI run " [pane]"
+Pick a token and start the command in
+.B @extract_revamped_command
+in a new window at the pane's folder, with each pick as its own argument.
+Without a command it says so and exits 1.
+.TP
 .BI choose " [pane]"
-Pick in a chooser: Enter types, C-o opens, C-y copies, and C-n moves to the
-next mode in
+Pick in a chooser: Enter types, C-o opens, C-y copies, C-e edits, C-x runs
+your command, and C-n moves to the next mode in
 .BR @extract_revamped_modes .
 .TP
 .B doctor
@@ -159,9 +170,21 @@ a key someone else already bound is left alone and
 .B doctor
 reports it.
 .TP
-.BR @extract_revamped_navigate_key ", " @extract_revamped_open_key ", " @extract_revamped_copy_key ", " @extract_revamped_chooser_key ", " @extract_revamped_doctor_key
-The prefix keys of the navigate, open and copy pickers, the chooser and the
-doctor report. All unbound by default.
+.BR @extract_revamped_navigate_key ", " @extract_revamped_open_key ", " @extract_revamped_copy_key ", " @extract_revamped_edit_key ", " @extract_revamped_run_key ", " @extract_revamped_chooser_key ", " @extract_revamped_doctor_key
+The prefix keys of the navigate, open, copy, edit and run pickers, the chooser
+and the doctor report. All unbound by default.
+.TP
+.B @extract_revamped_picker
+.B fzf
+lists the tokens in a popup.
+.B hints
+covers the pane with a borderless popup, draws a letter over the start of each
+token on the visible screen and acts on the one whose letter is typed, two
+letters past 26 tokens; any other key closes it. It needs tmux 3.3, takes
+effect after
+.BR apply ,
+and leaves the chooser on fzf. The default is
+.BR fzf .
 .TP
 .B @extract_revamped_mode
 What to pick:
@@ -177,7 +200,13 @@ What to pick:
 .BR uuids ,
 .BR numbers ,
 .BR quoted ,
-.B bracketed
+.BR bracketed ,
+.BR docker ,
+.BR kubernetes ,
+.BR git\-status ,
+.BR diff ,
+.BR markdown ,
+.B branches
 or
 .BR custom .
 The default is
@@ -205,6 +234,11 @@ reads. The default is
 .TP
 .B @extract_revamped_custom_regex
 The extended regex of the custom mode.
+.TP
+.B @extract_revamped_command
+The shell command the run action starts, with each pick as "$1", "$2" and so
+on, such as
+.BR "git show \(dq$1\(dq" .
 .TP
 .B @extract_revamped_min_length
 Drop tokens shorter than this. The default is

@@ -52,8 +52,11 @@ usage:
   extract-revamped open [PANE]      pick a token and open it: a URL in the
                                     browser, a path in $EDITOR
   extract-revamped copy [PANE]      pick a token and copy it
+  extract-revamped edit [PANE]      pick a token and open it in $EDITOR
+  extract-revamped run [PANE]       pick a token and run your command on it
   extract-revamped choose [PANE]    pick in a chooser: Enter types, C-o opens,
-                                    C-y copies, C-n changes the mode
+                                    C-y copies, C-e edits, C-x runs your
+                                    command, C-n changes the mode
   extract-revamped doctor           check this machine
   extract-revamped version          print the version
   extract-revamped help             print this page
@@ -80,17 +83,26 @@ tmux options:
   @extract_revamped_navigate_key   key of the navigate picker (unbound)
   @extract_revamped_open_key       key of the open picker (unbound)
   @extract_revamped_copy_key       key of the copy picker (unbound)
+  @extract_revamped_edit_key       key of the edit picker (unbound)
+  @extract_revamped_run_key        key of the run picker (unbound)
   @extract_revamped_chooser_key    key of the chooser (unbound)
   @extract_revamped_doctor_key     key of the doctor report (unbound)
+  @extract_revamped_picker         fzf, or hints for a letter drawn over
+                                   each token on the pane (fzf)
   @extract_revamped_mode           what to pick: all, urls, paths, words,
                                    lines, shas, ipv4, ipv6, hex, uuids,
-                                   numbers, quoted, bracketed or custom (all)
+                                   numbers, quoted, bracketed, docker,
+                                   kubernetes, git-status, diff, markdown,
+                                   branches or custom (all)
   @extract_revamped_modes          modes C-n cycles in the chooser
                                    (all urls paths words lines)
   @extract_revamped_scope          pane, all-panes or last-log (pane)
   @extract_revamped_log_dir        folder last-log reads the newest file of
                                    (~/.tmux/logging-revamped)
   @extract_revamped_custom_regex   extended regex of the custom mode (none)
+  @extract_revamped_command        shell command run and C-x start in a new
+                                   window, with each pick as "$1", "$2" and
+                                   so on (none)
   @extract_revamped_min_length     drop shorter tokens (0)
   @extract_revamped_reverse        1 puts the last match first (0)
   @extract_revamped_multi          1 lets fzf mark several tokens (0)
@@ -111,7 +123,10 @@ notes:
   on the command line or in the environment rides on the keys it binds. A
   picked token is typed with send-keys -l, so it reaches the pane as literal
   text. With frecency on, the last 20 picks are kept in
-  @extract_revamped_recent.
+  @extract_revamped_recent. With picker set to hints, a key covers the pane
+  with a borderless popup and acts on the token whose letter is typed; it
+  reads the visible screen only, needs tmux 3.3 and takes effect after apply.
+  The chooser always uses fzf.
 
 examples:
   extract-revamped list
@@ -242,7 +257,7 @@ extract_revamped_run() {
   [ -z "${extract_revamped_json}" ] || [ "${1:-}" = list ] || extract_revamped_usage "option '--json' works only with list"
   case "${1:-}" in
   apply) extract_revamped_apply ;;
-  insert | navigate | open | copy | choose) extract_revamped_pick "$1" "${2:-}" ;;
+  insert | navigate | open | copy | edit | run | choose) extract_revamped_pick "$1" "${2:-}" ;;
   *)
     extract_revamped_interface
     revamped_cli_start "${extract_revamped_run_theme}"

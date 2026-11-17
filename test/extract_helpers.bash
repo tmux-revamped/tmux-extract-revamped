@@ -20,6 +20,11 @@ extract() {
   lib_run extract "extract_revamped_for $1 \"\${PROBE_TEXT}\""
 }
 
+untraced() {
+  # shellcheck disable=SC2154
+  output=$(printf '%s\n' "${output}" | sed -e 's/+*BASHCOV>.*//' -e '/^$/d')
+}
+
 fzf_answers() {
   mkdir -p "${BATS_TEST_TMPDIR}/stubs"
   printf '%s\n' "$@" >"${BATS_TEST_TMPDIR}/fzf-answers"

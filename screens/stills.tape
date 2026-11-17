@@ -242,6 +242,108 @@ Sleep 1s
 Show
 Hide
 Ctrl+]
+Type@5ms "tmux set -g @extract_revamped_mode git-status; tmux set -g @extract_revamped_edit_key E; tmux set -g @extract_revamped_run_key R; extract-revamped apply"
+Enter
+Show
+Type "tmux set -g @extract_revamped_mode git-status; tmux set -g @extract_revamped_edit_key E; tmux set -g @extract_revamped_run_key R; extract-revamped apply"
+Sleep 400ms
+Hide
+Ctrl+]
+Type@5ms "Enter"
+Enter
+Show
+Enter
+Sleep 1500ms
+Hide
+Type "clear; cat status.txt"
+Enter
+Sleep 800ms
+Show
+Hide
+Ctrl+]
+Type@5ms "prefix M-x, Escape"
+Enter
+Show
+Ctrl+B
+Escape
+Type@1ms "x"
+Sleep 2s
+Screenshot modes.png
+Sleep 800ms
+Escape
+Sleep 2s
+Hide
+Ctrl+]
+Type@5ms "prefix E, README, Enter, q"
+Enter
+Show
+Ctrl+B
+Type@1ms "E"
+Sleep 2s
+Type "README"
+Sleep 800ms
+Enter
+Sleep 1500ms
+Screenshot edit.png
+Sleep 800ms
+Type "q"
+Sleep 1500ms
+Hide
+Ctrl+]
+Type@5ms "prefix R, handler, Enter"
+Enter
+Show
+Ctrl+B
+Type@1ms "R"
+Sleep 2s
+Type "handler"
+Sleep 800ms
+Enter
+Sleep 1500ms
+Screenshot run.png
+Sleep 4s
+Hide
+Ctrl+]
+Type@5ms "tmux set -g @extract_revamped_picker hints; tmux set -g @extract_revamped_mode urls; extract-revamped apply"
+Enter
+Show
+Type "tmux set -g @extract_revamped_picker hints; tmux set -g @extract_revamped_mode urls; extract-revamped apply"
+Sleep 400ms
+Hide
+Ctrl+]
+Type@5ms "Enter"
+Enter
+Show
+Enter
+Sleep 1500ms
+Hide
+Type "clear; cat build.log"
+Enter
+Sleep 800ms
+Show
+Hide
+Ctrl+]
+Type@5ms "prefix M-x, s"
+Enter
+Show
+Ctrl+B
+Escape
+Type@1ms "x"
+Sleep 2s
+Screenshot hints.png
+Sleep 800ms
+Type "s"
+Sleep 1500ms
+Screenshot hints-typed.png
+Sleep 800ms
+Hide
+Ctrl+U
+Type "tmux set -g @extract_revamped_picker fzf; tmux set -g @extract_revamped_mode all; extract-revamped apply; clear"
+Enter
+Sleep 1s
+Show
+Hide
+Ctrl+]
 Type@5ms "prefix D, Enter"
 Enter
 Show

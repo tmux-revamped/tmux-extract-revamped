@@ -18,3 +18,15 @@ wrote ./dist/app.tar.gz (12.4 MB) in 3.2 s
 request 7d3f2a90-5b1c-4e8f-9a2d-0c6b8e1f4a37 failed: see notes/release.md
 deployed to https://staging.example.com as v2.4.1
 LOG
+mkdir -p "${demo}/project/src/server" "${demo}/project/notes"
+printf '%s\n' '# demo' '' 'A small service.' >"${demo}/project/README.md"
+printf '%s\n' 'package server' '' 'func Handle() {}' >"${demo}/project/src/server/handler.go"
+cat >"${demo}/project/status.txt" <<'STATUS'
+On branch feature/login
+Changes not staged for commit:
+        modified:   README.md
+        modified:   src/server/handler.go
+
+Untracked files:
+        notes/release.md
+STATUS

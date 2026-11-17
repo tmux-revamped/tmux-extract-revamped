@@ -78,7 +78,9 @@ run-shell ~/.tmux/plugins/tmux-extract-revamped/extract-revamped.tmux
 | `@extract_revamped_navigate_key` | 选取片段并在复制模式中查找 | 未绑定 |
 | `@extract_revamped_open_key` | 选取片段并打开：URL 在浏览器中，路径在新窗口的 `$EDITOR` 中，其他内容直接输入 | 未绑定 |
 | `@extract_revamped_copy_key` | 选取片段并复制 | 未绑定 |
-| `@extract_revamped_chooser_key` | 在选择器中选取：`Enter` 输入，`C-o` 打开，`C-y` 复制，`C-n` 切换到下一个模式 | 未绑定 |
+| `@extract_revamped_edit_key` | 选取片段并在新窗口的 `$EDITOR` 中打开，不论它是什么 | 未绑定 |
+| `@extract_revamped_run_key` | 选取片段并在新窗口中对它运行 `@extract_revamped_command` | 未绑定 |
+| `@extract_revamped_chooser_key` | 在选择器中选取：`Enter` 输入，`C-o` 打开，`C-y` 复制，`C-e` 编辑，`C-x` 运行你的命令，`C-n` 切换到下一个模式 | 未绑定 |
 | `@extract_revamped_doctor_key` | 在弹出窗口中显示 doctor 报告 | 未绑定 |
 
 `M-x` 是本插件在家族按键分配中的位置。如果你已经自己绑定了 `prefix M-x`，插件会保留它，并由 `doctor` 说明；可把 `@extract_revamped_key` 设为其他按键，或设为 `none` 表示不绑定。
@@ -87,7 +89,7 @@ run-shell ~/.tmux/plugins/tmux-extract-revamped/extract-revamped.tmux
 |:--------|:-------------|
 | `extract-revamped apply` | 立即绑定按键；插件加载时入口点会运行它 |
 | `extract-revamped list` | 打印 apply 会做的每个绑定；`--json` 输出一个对象 |
-| `extract-revamped insert`, `navigate`, `open`, `copy`, `choose` `PANE` | 在窗格上运行选择器；按键会在弹出窗口中运行这些命令 |
+| `extract-revamped insert`, `navigate`, `open`, `copy`, `edit`, `run`, `choose` `PANE` | 在窗格上运行选择器；按键会在弹出窗口中运行这些命令 |
 | `extract-revamped doctor` | 每个依赖一行，包括被他人占用的默认按键 |
 | `extract-revamped version` | 版本，然后是 tmux 版本 |
 | `extract-revamped help` | 帮助页；`man extract-revamped` 记录相同的命令和设置 |
@@ -96,11 +98,13 @@ run-shell ~/.tmux/plugins/tmux-extract-revamped/extract-revamped.tmux
 | tmux 选项 | 默认值 | 含义 |
 |:------------|:--------|:--------|
 | `@extract_revamped_key` | `M-x` | 插入选择器的前缀键；`none` 表示不绑定 |
+| `@extract_revamped_picker` | `fzf` | `hints` 时直接在窗格上为每个片段画出一个字母，并处理你输入的字母对应的片段；需要 tmux 3.3，并在 `extract-revamped apply` 之后生效 |
 | `@extract_revamped_mode` | `all` | 要选取的内容，取下面的模式之一 |
 | `@extract_revamped_modes` | `all urls paths words lines` | 选择器中 `C-n` 循环的模式 |
 | `@extract_revamped_scope` | `pane` | 要读取的文本：`pane`、窗口的 `all-panes`，或日志文件夹中最新文件的 `last-log` |
 | `@extract_revamped_log_dir` | `~/.tmux/logging-revamped` | `last-log` 读取的文件夹 |
 | `@extract_revamped_custom_regex` | 无 | `custom` 模式的扩展正则表达式 |
+| `@extract_revamped_command` | 无 | 运行动作在窗格所在文件夹的新窗口中启动的 shell 命令，选取的片段依次作为 `"$1"`、`"$2"` 传入，例如 `git show "$1"` |
 | `@extract_revamped_min_length` | `0` | 去掉比这更短的片段 |
 | `@extract_revamped_reverse` | `0` | `1` 时把屏幕上最后的匹配放在最前 |
 | `@extract_revamped_multi` | `0` | `1` 时可在 fzf 中用 `Tab` 标记多个片段；insert 用空格连接输入 |
@@ -130,9 +134,17 @@ run-shell ~/.tmux/plugins/tmux-extract-revamped/extract-revamped.tmux
 | `numbers` | 带符号的整数和小数 |
 | `quoted` | 双引号、单引号或反引号中的文本 |
 | `bracketed` | 圆括号、方括号、花括号或尖括号中的文本 |
+| `docker` | 容器 ID、`ghcr.io/acme/api:1.4.2` 这样的镜像引用，以及 `sha256` 摘要 |
+| `kubernetes` | `pod/web-0`、`deployment.apps/web` 这样的资源名，以及 `web-7d4b9c6f5-x2k9q` 这样自动生成的 Pod 名 |
+| `git-status` | `git status` 列出的文件，支持长格式和短格式，重命名的两侧都会列出 |
+| `diff` | diff 中 `diff --git`、`---` 和 `+++` 行里的文件 |
+| `markdown` | 每个 Markdown 链接的目标 |
+| `branches` | `git status`、`git branch` 和 `git log` 装饰中的分支名和标签名 |
 | `custom` | `@extract_revamped_custom_regex` 的匹配 |
 
 选取的片段用 `send-keys -l` 输入，所以像 `Enter` 这样的片段会作为文本输入，而不会被按下。打开时会从按下按键的窗格所在文件夹启动编辑器，并把路径作为一个参数传入。
+
+设置 `@extract_revamped_picker hints` 后，按键会用无边框的弹出窗口盖住窗格，在可见屏幕上每个片段的开头画出一个字母，并处理你输入的字母对应的片段；屏幕上的片段超过 26 个时用两个字母。按其他键会关闭它。提示只读取可见屏幕，不受 `@extract_revamped_scope` 影响，选择器仍然使用 fzf。
 
 <a id="界面"></a>
 
@@ -161,30 +173,41 @@ run-shell ~/.tmux/plugins/tmux-extract-revamped/extract-revamped.tmux
 </tr>
 <tr>
 <td width="50%" valign="top"><img src="screens/all-panes.png" alt="extract-revamped：@extract_revamped_scope all-panes 读取另一个窗格"><br><sub><code>@extract_revamped_scope all-panes</code> 读取另一个窗格，来自 <code>stills.tape</code></sub></td>
+<td width="50%" valign="top"><img src="screens/modes.png" alt="extract-revamped：git-status 模式列出 git status 中的文件"><br><sub>git-status 模式列出 git status 中的文件，来自 <code>stills.tape</code></sub></td>
+</tr>
+<tr>
+<td width="50%" valign="top"><img src="screens/edit.png" alt="extract-revamped：编辑选择器在编辑器中打开选取的片段"><br><sub>编辑选择器在编辑器中打开选取的片段，来自 <code>stills.tape</code></sub></td>
+<td width="50%" valign="top"><img src="screens/run.png" alt="extract-revamped：运行选择器对选取的片段运行你的命令"><br><sub>运行选择器对选取的片段运行你的命令，来自 <code>stills.tape</code></sub></td>
+</tr>
+<tr>
+<td width="50%" valign="top"><img src="screens/hints.png" alt="extract-revamped：画在窗格上的字母提示"><br><sub>画在窗格上的字母提示，来自 <code>stills.tape</code></sub></td>
+<td width="50%" valign="top"><img src="screens/hints-typed.png" alt="extract-revamped：按下字母后输入的片段"><br><sub>按下字母后输入的片段，来自 <code>stills.tape</code></sub></td>
+</tr>
+<tr>
 <td width="50%" valign="top"><img src="screens/doctor-popup.png" alt="extract-revamped：doctor 键"><br><sub>doctor 键，来自 <code>stills.tape</code></sub></td>
-</tr>
-<tr>
 <td width="50%" valign="top"><img src="screens/menu.png" alt="extract-revamped：菜单"><br><sub>菜单，来自 <code>stills.tape</code></sub></td>
+</tr>
+<tr>
 <td width="50%" valign="top"><img src="screens/doctor.png" alt="extract-revamped：doctor"><br><sub><code>doctor</code>，来自 <code>stills.tape</code></sub></td>
-</tr>
-<tr>
 <td width="50%" valign="top"><img src="screens/list.png" alt="extract-revamped：list"><br><sub><code>list</code>，来自 <code>stills.tape</code></sub></td>
+</tr>
+<tr>
 <td width="50%" valign="top"><img src="screens/json.png" alt="extract-revamped：list --json"><br><sub><code>list --json</code>，来自 <code>stills.tape</code></sub></td>
-</tr>
-<tr>
 <td width="50%" valign="top"><img src="screens/plain-menu.png" alt="extract-revamped：没有 gum 的菜单"><br><sub>没有 gum 的菜单，来自 <code>stills.tape</code></sub></td>
+</tr>
+<tr>
 <td width="50%" valign="top"><img src="screens/plain-apply.png" alt="extract-revamped：从菜单运行 apply"><br><sub>从菜单运行 <code>apply</code>，来自 <code>stills.tape</code></sub></td>
-</tr>
-<tr>
 <td width="50%" valign="top"><img src="screens/version.png" alt="extract-revamped：版本"><br><sub>版本，来自 <code>stills.tape</code></sub></td>
+</tr>
+<tr>
 <td width="50%" valign="top"><img src="screens/error.png" alt="extract-revamped：未知命令"><br><sub>未知命令，来自 <code>stills.tape</code></sub></td>
-</tr>
-<tr>
 <td width="50%" valign="top"><img src="screens/themes.png" alt="extract-revamped：六种主题下的标题"><br><sub>六种主题下的标题，来自 <code>themes.tape</code></sub></td>
-<td width="50%" valign="top"><img src="screens/help.png" alt="extract-revamped：帮助页"><br><sub>帮助页，来自 <code>help.tape</code></sub></td>
 </tr>
 <tr>
+<td width="50%" valign="top"><img src="screens/help.png" alt="extract-revamped：帮助页"><br><sub>帮助页，来自 <code>help.tape</code></sub></td>
 <td width="50%" valign="top"><img src="screens/accent.png" alt="extract-revamped：来自 EXTRACT_REVAMPED_ACCENT 的强调色"><br><sub>来自 <code>EXTRACT_REVAMPED_ACCENT</code> 的强调色，来自 <code>stills.tape</code></sub></td>
+</tr>
+<tr>
 <td width="50%" valign="top"></td>
 </tr>
 </table>

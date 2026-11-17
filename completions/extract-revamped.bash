@@ -11,8 +11,12 @@ _extract_revamped() {
     COMPREPLY=($(compgen -W "kodougu catppuccin-mocha catppuccin-latte dracula nord gruvbox tokyo-night mono" -- "${cur}"))
     return
     ;;
+  --picker)
+    COMPREPLY=($(compgen -W "fzf hints" -- "${cur}"))
+    return
+    ;;
   --mode)
-    COMPREPLY=($(compgen -W "all urls paths words lines shas ipv4 ipv6 hex uuids numbers quoted bracketed custom" -- "${cur}"))
+    COMPREPLY=($(compgen -W "all urls paths words lines shas ipv4 ipv6 hex uuids numbers quoted bracketed docker kubernetes git-status diff markdown branches custom" -- "${cur}"))
     return
     ;;
   --scope)
@@ -35,13 +39,13 @@ _extract_revamped() {
     COMPREPLY=($(compgen -W "0 1" -- "${cur}"))
     return
     ;;
-  --key | --navigate-key | --open-key | --copy-key | --chooser-key | --doctor-key | --modes | --log-dir | --custom-regex | --min-length | --lines | --popup-width | --popup-height)
+  --key | --navigate-key | --open-key | --copy-key | --edit-key | --run-key | --chooser-key | --doctor-key | --modes | --log-dir | --custom-regex | --command | --min-length | --lines | --popup-width | --popup-height)
     return
     ;;
   *) ;;
   esac
 
-  COMPREPLY=($(compgen -W "apply list insert navigate open copy choose doctor version help --json --theme --key --navigate-key --open-key --copy-key --chooser-key --doctor-key --mode --modes --scope --log-dir --custom-regex --min-length --reverse --multi --osc52 --frecency --lines --popup-width --popup-height" -- "${cur}"))
+  COMPREPLY=($(compgen -W "apply list insert navigate open copy edit run choose doctor version help --json --theme --key --navigate-key --open-key --copy-key --edit-key --run-key --chooser-key --doctor-key --picker --mode --modes --scope --log-dir --custom-regex --command --min-length --reverse --multi --osc52 --frecency --lines --popup-width --popup-height" -- "${cur}"))
 }
 
 complete -F _extract_revamped extract-revamped

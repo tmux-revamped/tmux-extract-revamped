@@ -9,6 +9,8 @@ _extract_revamped() {
     'navigate:pick a token and find it in copy-mode'
     'open:pick a token and open it'
     'copy:pick a token and copy it'
+    'edit:pick a token and open it in the editor'
+    'run:pick a token and run your command on it'
     'choose:pick in the chooser'
     'doctor:check this machine'
     'version:print the version'
@@ -22,13 +24,17 @@ _extract_revamped() {
     '--navigate-key[key of the navigate picker]:value:' \
     '--open-key[key of the open picker]:value:' \
     '--copy-key[key of the copy picker]:value:' \
+    '--edit-key[key of the edit picker]:value:' \
+    '--run-key[key of the run picker]:value:' \
     '--chooser-key[key of the chooser]:value:' \
     '--doctor-key[key of the doctor report]:value:' \
-    '--mode[what to pick]:value:(all urls paths words lines shas ipv4 ipv6 hex uuids numbers quoted bracketed custom)' \
+    '--picker[how to pick]:value:(fzf hints)' \
+    '--mode[what to pick]:value:(all urls paths words lines shas ipv4 ipv6 hex uuids numbers quoted bracketed docker kubernetes git-status diff markdown branches custom)' \
     '--modes[modes the chooser cycles]:value:' \
     '--scope[text to read]:value:(pane all-panes last-log)' \
     '--log-dir[folder last-log reads]:value:' \
     '--custom-regex[regex of the custom mode]:value:' \
+    '--command[command the run action starts]:value:' \
     '--min-length[drop shorter tokens]:value:' \
     '--reverse[last match first]:value:(0 1)' \
     '--multi[mark several tokens]:value:(0 1)' \

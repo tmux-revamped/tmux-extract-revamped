@@ -270,7 +270,7 @@ EOF
 
   # Assert
   run cat "${BATS_TEST_TMPDIR}/fzf.args"
-  [[ "${lines[0]}" == *"--expect=ctrl-o,ctrl-y,ctrl-n --header all: "* ]]
+  [[ "${lines[0]}" == *"--expect=ctrl-o,ctrl-y,ctrl-e,ctrl-x,ctrl-n --header all: "* ]]
   [[ "${lines[1]}" == *"--header urls: "* ]]
   run grep -c '^send-keys -t %1 -l -- https://a.io/x$' "${REVAMPED_TEST_TMUX_LOG}"
   [[ "${output}" == "1" ]]

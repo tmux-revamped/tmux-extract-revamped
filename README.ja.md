@@ -78,7 +78,9 @@ run-shell ~/.tmux/plugins/tmux-extract-revamped/extract-revamped.tmux
 | `@extract_revamped_navigate_key` | トークンを選び、コピーモードで探します | 未割り当て |
 | `@extract_revamped_open_key` | トークンを選んで開きます。URL はブラウザーで、パスは新しいウィンドウの `$EDITOR` で、それ以外は入力します | 未割り当て |
 | `@extract_revamped_copy_key` | トークンを選び、コピーします | 未割り当て |
-| `@extract_revamped_chooser_key` | チューザーで選びます。`Enter` で入力、`C-o` で開く、`C-y` でコピー、`C-n` で次のモード | 未割り当て |
+| `@extract_revamped_edit_key` | トークンを選び、種類を問わず新しいウィンドウの `$EDITOR` で開きます | 未割り当て |
+| `@extract_revamped_run_key` | トークンを選び、新しいウィンドウで `@extract_revamped_command` を実行します | 未割り当て |
+| `@extract_revamped_chooser_key` | チューザーで選びます。`Enter` で入力、`C-o` で開く、`C-y` でコピー、`C-e` で編集、`C-x` で自分のコマンドを実行、`C-n` で次のモード | 未割り当て |
 | `@extract_revamped_doctor_key` | doctor の結果をポップアップで表示します | 未割り当て |
 
 `M-x` はファミリーのキー割り当てでこのプラグインの枠です。`prefix M-x` を自分で割り当てているときは、プラグインはそのままにし、`doctor` がそれを報告します。`@extract_revamped_key` を別のキーにするか、`none` でキーなしにします。
@@ -87,7 +89,7 @@ run-shell ~/.tmux/plugins/tmux-extract-revamped/extract-revamped.tmux
 |:--------|:-------------|
 | `extract-revamped apply` | キーを今すぐ割り当てます。プラグインの読み込み時にエントリーポイントが実行します |
 | `extract-revamped list` | apply が行う割り当てをすべて表示します。`--json` で 1 つのオブジェクトを出力します |
-| `extract-revamped insert`, `navigate`, `open`, `copy`, `choose` `PANE` | ペインで選択画面を実行します。キーはこれらをポップアップで実行します |
+| `extract-revamped insert`, `navigate`, `open`, `copy`, `edit`, `run`, `choose` `PANE` | ペインで選択画面を実行します。キーはこれらをポップアップで実行します |
 | `extract-revamped doctor` | 依存関係ごとに 1 行。ほかの誰かが使っている既定キーも含みます |
 | `extract-revamped version` | バージョンと tmux のバージョン |
 | `extract-revamped help` | ヘルプ。`man extract-revamped` にも同じコマンドと設定があります |
@@ -96,11 +98,13 @@ run-shell ~/.tmux/plugins/tmux-extract-revamped/extract-revamped.tmux
 | tmux オプション | 既定値 | 意味 |
 |:------------|:--------|:--------|
 | `@extract_revamped_key` | `M-x` | 挿入の選択画面のプレフィックスキー。`none` でキーなし |
+| `@extract_revamped_picker` | `fzf` | `hints` にすると、ペインそのものの上で各トークンに文字を重ねて表示し、入力した文字のトークンを処理します。tmux 3.3 以降が必要で、`extract-revamped apply` の後に有効になります |
 | `@extract_revamped_mode` | `all` | 選ぶもの。下のモードのいずれか |
 | `@extract_revamped_modes` | `all urls paths words lines` | チューザーで `C-n` が切り替えるモード |
 | `@extract_revamped_scope` | `pane` | 読むテキスト。`pane`、ウィンドウの `all-panes`、またはログフォルダーの最新ファイルの `last-log` |
 | `@extract_revamped_log_dir` | `~/.tmux/logging-revamped` | `last-log` が読むフォルダー |
 | `@extract_revamped_custom_regex` | なし | `custom` モードの拡張正規表現 |
+| `@extract_revamped_command` | なし | 実行アクションが、ペインのフォルダーで新しいウィンドウに起動するシェルコマンド。選んだトークンは `"$1"`、`"$2"` の順に渡されます。例 `git show "$1"` |
 | `@extract_revamped_min_length` | `0` | これより短いトークンを除きます |
 | `@extract_revamped_reverse` | `0` | `1` で画面上の最後の一致を先頭にします |
 | `@extract_revamped_multi` | `0` | `1` で fzf の `Tab` で複数のトークンを選べます。insert は空白でつないで入力します |
@@ -130,9 +134,17 @@ tmux オプションで指定した設定はキーを実行したときに読む
 | `numbers` | 符号付きの整数と小数 |
 | `quoted` | ダブルクォート、シングルクォート、バッククォートの中のテキスト |
 | `bracketed` | 丸括弧、角括弧、波括弧、山括弧の中のテキスト |
+| `docker` | コンテナ ID、`ghcr.io/acme/api:1.4.2` のようなイメージ参照、`sha256` ダイジェスト |
+| `kubernetes` | `pod/web-0` や `deployment.apps/web` のようなリソース名と、`web-7d4b9c6f5-x2k9q` のような自動生成の Pod 名 |
+| `git-status` | `git status` が並べるファイル。長い形式と短い形式の両方に対応し、名前変更は両側を拾います |
+| `diff` | diff の `diff --git`、`---`、`+++` の行にあるファイル |
+| `markdown` | Markdown リンクのリンク先 |
+| `branches` | `git status`、`git branch`、`git log` の装飾に出るブランチ名とタグ名 |
 | `custom` | `@extract_revamped_custom_regex` に一致するもの |
 
 選んだトークンは `send-keys -l` で入力されるので、`Enter` のようなトークンも押されずに文字として入力されます。開くときは、キーを押したペインのフォルダーから、パスを 1 つの引数としてエディターを起動します。
+
+`@extract_revamped_picker hints` にすると、キーを押したときに枠なしのポップアップがペインを覆い、画面に見えている各トークンの先頭に文字を重ねて表示します。その文字を入力するとそのトークンを処理します。画面のトークンが 26 個を超えるときは 2 文字です。ほかのキーを押すと閉じます。ヒントは `@extract_revamped_scope` の値にかかわらず見えている画面だけを読み、チューザーは fzf のままです。
 
 <a id="画面"></a>
 
@@ -161,30 +173,41 @@ tmux オプションで指定した設定はキーを実行したときに読む
 </tr>
 <tr>
 <td width="50%" valign="top"><img src="screens/all-panes.png" alt="extract-revamped: @extract_revamped_scope all-panes がもう一方のペインを読む"><br><sub><code>@extract_revamped_scope all-panes</code> がもう一方のペインを読む。<code>stills.tape</code>より</sub></td>
+<td width="50%" valign="top"><img src="screens/modes.png" alt="extract-revamped: git-status モードは git status のファイルを並べます"><br><sub>git-status モードは git status のファイルを並べます。<code>stills.tape</code>より</sub></td>
+</tr>
+<tr>
+<td width="50%" valign="top"><img src="screens/edit.png" alt="extract-revamped: 編集の選択画面は選んだものをエディターで開きます"><br><sub>編集の選択画面は選んだものをエディターで開きます。<code>stills.tape</code>より</sub></td>
+<td width="50%" valign="top"><img src="screens/run.png" alt="extract-revamped: 実行の選択画面は選んだものに自分のコマンドを実行します"><br><sub>実行の選択画面は選んだものに自分のコマンドを実行します。<code>stills.tape</code>より</sub></td>
+</tr>
+<tr>
+<td width="50%" valign="top"><img src="screens/hints.png" alt="extract-revamped: ペインの上に重ねた文字のヒント"><br><sub>ペインの上に重ねた文字のヒント。<code>stills.tape</code>より</sub></td>
+<td width="50%" valign="top"><img src="screens/hints-typed.png" alt="extract-revamped: 文字を押した後に入力されたトークン"><br><sub>文字を押した後に入力されたトークン。<code>stills.tape</code>より</sub></td>
+</tr>
+<tr>
 <td width="50%" valign="top"><img src="screens/doctor-popup.png" alt="extract-revamped: doctor キー"><br><sub>doctor キー。<code>stills.tape</code>より</sub></td>
-</tr>
-<tr>
 <td width="50%" valign="top"><img src="screens/menu.png" alt="extract-revamped: メニュー"><br><sub>メニュー。<code>stills.tape</code>より</sub></td>
+</tr>
+<tr>
 <td width="50%" valign="top"><img src="screens/doctor.png" alt="extract-revamped: doctor"><br><sub><code>doctor</code>。<code>stills.tape</code>より</sub></td>
-</tr>
-<tr>
 <td width="50%" valign="top"><img src="screens/list.png" alt="extract-revamped: list"><br><sub><code>list</code>。<code>stills.tape</code>より</sub></td>
+</tr>
+<tr>
 <td width="50%" valign="top"><img src="screens/json.png" alt="extract-revamped: list --json"><br><sub><code>list --json</code>。<code>stills.tape</code>より</sub></td>
-</tr>
-<tr>
 <td width="50%" valign="top"><img src="screens/plain-menu.png" alt="extract-revamped: gum なしのメニュー"><br><sub>gum なしのメニュー。<code>stills.tape</code>より</sub></td>
+</tr>
+<tr>
 <td width="50%" valign="top"><img src="screens/plain-apply.png" alt="extract-revamped: メニューからの apply"><br><sub>メニューからの <code>apply</code>。<code>stills.tape</code>より</sub></td>
-</tr>
-<tr>
 <td width="50%" valign="top"><img src="screens/version.png" alt="extract-revamped: バージョン"><br><sub>バージョン。<code>stills.tape</code>より</sub></td>
+</tr>
+<tr>
 <td width="50%" valign="top"><img src="screens/error.png" alt="extract-revamped: 不明なコマンド"><br><sub>不明なコマンド。<code>stills.tape</code>より</sub></td>
-</tr>
-<tr>
 <td width="50%" valign="top"><img src="screens/themes.png" alt="extract-revamped: 6 つのテーマのヘッダー"><br><sub>6 つのテーマのヘッダー。<code>themes.tape</code>より</sub></td>
-<td width="50%" valign="top"><img src="screens/help.png" alt="extract-revamped: ヘルプ"><br><sub>ヘルプ。<code>help.tape</code>より</sub></td>
 </tr>
 <tr>
+<td width="50%" valign="top"><img src="screens/help.png" alt="extract-revamped: ヘルプ"><br><sub>ヘルプ。<code>help.tape</code>より</sub></td>
 <td width="50%" valign="top"><img src="screens/accent.png" alt="extract-revamped: EXTRACT_REVAMPED_ACCENT によるアクセント"><br><sub><code>EXTRACT_REVAMPED_ACCENT</code> によるアクセント。<code>stills.tape</code>より</sub></td>
+</tr>
+<tr>
 <td width="50%" valign="top"></td>
 </tr>
 </table>
