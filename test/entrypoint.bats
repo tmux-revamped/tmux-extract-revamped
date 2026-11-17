@@ -298,3 +298,124 @@ attach_host() {
   # Assert
   wait_for offered_is $'id#7\nit\'s\nid#42'
 }
+
+host_shows() {
+  local screen
+  screen=$(command tmux -S "${HOST}" capture-pane -p -t host)
+  [[ "${screen}" == *"$1"* ]]
+}
+
+host_lacks() {
+  ! host_shows "$1"
+}
+
+in_mode() {
+  local now
+  now=$(tmux display-message -p -t "${PANE}" '#{pane_in_mode}')
+  [[ "${now}" == "1" ]]
+}
+
+file_holds() {
+  [[ -f "$1" ]] || return 1
+  grep -qF -- "$2" "$1"
+}
+
+bound_on() {
+  tmux set-environment -g PATH "${BATS_TEST_TMPDIR}/stubs:${PATH}"
+  tmux set-option -g "@extract_revamped_$1" "$2"
+  load_plugin "${ROOT}"
+}
+
+@test "navigate - pressing its key puts the pane under the popup into copy-mode on the pick" {
+  # Arrange
+  bound_on navigate_key N
+  tmux send-keys -t "${PANE}" 'echo marker-token' Enter
+  wait_for typed 'marker-token'
+  tmux set-option -g @extract_revamped_mode words
+  answer 'marker-token'
+  attach_host
+
+  # Act
+  command tmux -S "${HOST}" send-keys -t host C-b N
+
+  # Assert
+  wait_for in_mode
+}
+
+@test "open - pressing its key opens the picked path in the editor at the pane's folder" {
+  # Arrange
+  local folder="${BATS_TEST_TMPDIR}/work dir"
+  mkdir -p "${folder}"
+  folder=$(cd "${folder}" && pwd -P)
+  printf '#!/bin/sh\nprintf "%%s|%%s\\n" "$PWD" "$1" >"%s"\n' "${BATS_TEST_TMPDIR}/editor.out" >"${BATS_TEST_TMPDIR}/stubs/fake-editor"
+  chmod +x "${BATS_TEST_TMPDIR}/stubs/fake-editor"
+  tmux set-environment -g EDITOR "${BATS_TEST_TMPDIR}/stubs/fake-editor"
+  bound_on open_key O
+  tmux send-keys -t "${PANE}" "cd '${folder}' && echo notes/a.md" Enter
+  wait_for typed 'notes/a.md'
+  tmux set-option -g @extract_revamped_mode paths
+  answer 'notes/a.md'
+  attach_host
+
+  # Act
+  command tmux -S "${HOST}" send-keys -t host C-b O
+
+  # Assert
+  wait_for file_holds "${BATS_TEST_TMPDIR}/editor.out" "${folder}|notes/a.md"
+}
+
+@test "copy - pressing its key sends the pick to the clipboard tool" {
+  # Arrange
+  local name
+  for name in pbcopy wl-copy xclip xsel; do
+    printf '#!/bin/sh\ncat >"%s"\n' "${BATS_TEST_TMPDIR}/clipboard" >"${BATS_TEST_TMPDIR}/stubs/${name}"
+    chmod +x "${BATS_TEST_TMPDIR}/stubs/${name}"
+  done
+  bound_on copy_key C
+  tmux send-keys -t "${PANE}" 'echo see https://example.com/copy' Enter
+  wait_for typed 'see https://example.com/copy'
+  tmux set-option -g @extract_revamped_mode urls
+  answer 'https://example.com/copy'
+  attach_host
+
+  # Act
+  command tmux -S "${HOST}" send-keys -t host C-b C
+
+  # Assert
+  wait_for file_holds "${BATS_TEST_TMPDIR}/clipboard" 'https://example.com/copy'
+}
+
+@test "choose - pressing its key and taking the pick with Enter types it into the pane" {
+  # Arrange
+  bound_on chooser_key H
+  tmux send-keys -t "${PANE}" 'echo see https://example.com/choose' Enter
+  wait_for typed 'see https://example.com/choose'
+  tmux set-option -g @extract_revamped_mode urls
+  printf '\n%s\n' 'https://example.com/choose' >"${BATS_TEST_TMPDIR}/fzf.answer"
+  printf '#!/bin/sh\ncat >/dev/null\ncat "%s"\n' "${BATS_TEST_TMPDIR}/fzf.answer" >"${BATS_TEST_TMPDIR}/stubs/fzf"
+  chmod +x "${BATS_TEST_TMPDIR}/stubs/fzf"
+  attach_host
+
+  # Act
+  command tmux -S "${HOST}" send-keys -t host C-b H
+
+  # Assert
+  wait_for typed $'\n$ https://example.com/choose'
+}
+
+@test "doctor - pressing its key shows the dependency rows in a popup until Enter closes it" {
+  # Arrange
+  answer 'unused'
+  bound_on doctor_key D
+  attach_host
+
+  # Act
+  command tmux -S "${HOST}" send-keys -t host C-b D
+
+  # Assert
+  wait_for host_shows 'awk'
+  command tmux -S "${HOST}" send-keys -t host Enter
+  wait_for host_lacks 'awk'
+  command tmux -S "${HOST}" send-keys -t host "echo clo''sed" Enter
+  wait_for typed $'\nclosed'
+}

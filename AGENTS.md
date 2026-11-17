@@ -48,6 +48,4 @@ Guidance for anyone, human or agent, changing tmux-extract-revamped. What it is 
 
 ## Gaps against FAMILY.md
 
-As of 2026-11-16:
-
-- Only `prefix M-x` is pressed through a real client in a test; the navigate, open, copy, chooser and doctor keys are checked as bindings and their commands called directly.
+As of 2026-11-17, none.
