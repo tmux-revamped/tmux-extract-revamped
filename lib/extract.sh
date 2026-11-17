@@ -426,8 +426,9 @@ extract_revamped_open_path() {
   *) : ;;
   esac
   extract_revamped_open_path_dir=$(tmux display-message -p -t "$1" '#{pane_current_path}' 2>/dev/null) || extract_revamped_open_path_dir=""
+  extract_revamped_open_path_dir=$(printf '%s\n' "${extract_revamped_open_path_dir:-${PWD}}" | sed 's/#/##/g')
   # shellcheck disable=SC2016
-  tmux new-window -c "${extract_revamped_open_path_dir:-${PWD}}" -- sh -c 'set -f; exec $1 "$2"' extract-revamped "${EDITOR:-vi}" "${extract_revamped_open_path_file}" 2>/dev/null || :
+  tmux new-window -c "${extract_revamped_open_path_dir}" -- sh -c 'set -f; exec $1 "$2"' extract-revamped "${EDITOR:-vi}" "${extract_revamped_open_path_file}" 2>/dev/null || :
 }
 
 extract_revamped_open() {

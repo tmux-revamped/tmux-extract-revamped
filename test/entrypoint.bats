@@ -193,6 +193,28 @@ attach_host() {
   [[ "${output}" == "${folder}|notes/a.md" ]]
 }
 
+@test "open - the editor starts in a folder whose name holds a hash tmux reads as a format" {
+  # Arrange
+  local folder="${BATS_TEST_TMPDIR}/a #S dir"
+  mkdir -p "${folder}"
+  folder=$(cd "${folder}" && pwd -P)
+  tmux send-keys -t "${PANE}" "cd '${folder}' && echo notes/a.md" Enter
+  wait_for typed 'notes/a.md'
+  tmux set-option -g @extract_revamped_mode paths
+  answer 'notes/a.md'
+  printf '#!/bin/sh\nprintf "%%s|%%s\\n" "$PWD" "$1" >"%s"\n' "${BATS_TEST_TMPDIR}/editor.out" >"${BATS_TEST_TMPDIR}/stubs/fake-editor"
+  chmod +x "${BATS_TEST_TMPDIR}/stubs/fake-editor"
+  tmux set-environment -g EDITOR "${BATS_TEST_TMPDIR}/stubs/fake-editor"
+
+  # Act
+  EDITOR="${BATS_TEST_TMPDIR}/stubs/fake-editor" tool open "${PANE}"
+
+  # Assert
+  wait_for test -s "${BATS_TEST_TMPDIR}/editor.out"
+  run cat "${BATS_TEST_TMPDIR}/editor.out"
+  [[ "${output}" == "${folder}|notes/a.md" ]]
+}
+
 @test "open - a path with spaces and shell syntax reaches the editor as one argument" {
   # Arrange
   tmux send-keys -t "${PANE}" "echo './a \$(b);c'" Enter
