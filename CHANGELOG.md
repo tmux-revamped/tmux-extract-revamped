@@ -1,5 +1,13 @@
 # Changelog
 
+## [3.0.1](https://github.com/tmux-revamped/tmux-extract-revamped/compare/v3.0.0...v3.0.1) (2026-11-17)
+
+
+### Bug Fixes
+
+* carry settings to keys, keep # out of popups ([25a1d61](https://github.com/tmux-revamped/tmux-extract-revamped/commit/25a1d613db83c6c68cbc3930529b1390499efcf5))
+* start in a folder whose path has a # ([56b2865](https://github.com/tmux-revamped/tmux-extract-revamped/commit/56b286524250a644712115cfa1f50e047e78cc9b))
+
 # [3.0.0](https://github.com/tmux-revamped/tmux-extract-revamped/compare/v2.0.0...v3.0.0) (2026-11-16)
 
 
