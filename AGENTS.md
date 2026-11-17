@@ -14,7 +14,7 @@ Guidance for anyone, human or agent, changing tmux-extract-revamped. What it is 
 | [`lib/state.sh`](lib/state.sh) | Every global, including `EXTRACT_REVAMPED_SETTINGS`, the table of setting names and defaults the rest reads |
 | [`lib/core.sh`](lib/core.sh) | The version |
 | [`lib/`](lib) | Every other file is the shared library, identical in every member |
-| [`test/extract.bats`](test/extract.bats), [`test/commands.bats`](test/commands.bats), [`test/entrypoint.bats`](test/entrypoint.bats) | This member's suites: the extractors, the plan and the pickers through stubs, the commands, and the bindings and actions on a private tmux server with a plain `sh` pane |
+| [`test/extract.bats`](test/extract.bats), [`test/extract-pick.bats`](test/extract-pick.bats), [`test/commands.bats`](test/commands.bats), [`test/entrypoint.bats`](test/entrypoint.bats) | This member's suites: the extractors, the plan and the pickers through stubs, the commands, and the bindings and actions on a private tmux server with a plain `sh` pane |
 | [`screens/`](screens) | The tapes, the recording's tmux config and a demo build log the tapes pick from |
 
 ## Names
