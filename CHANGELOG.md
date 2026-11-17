@@ -1,5 +1,12 @@
 # Changelog
 
+# [3.1.0](https://github.com/tmux-revamped/tmux-extract-revamped/compare/v3.0.1...v3.1.0) (2026-11-17)
+
+
+### Features
+
+* add letter hints, edit, run and six modes ([28ff06a](https://github.com/tmux-revamped/tmux-extract-revamped/commit/28ff06a5f8771b46697e7b3ede5a5180bc4bb8ba))
+
 ## [3.0.1](https://github.com/tmux-revamped/tmux-extract-revamped/compare/v3.0.0...v3.0.1) (2026-11-17)
 
 
