@@ -30,7 +30,7 @@ Sleep 500ms
 Show
 Hide
 Ctrl+]
-Type@5ms "prefix n, 7d3f, Enter"
+Type@5ms "prefix n, 7d3f, Enter, q"
 Enter
 Show
 Ctrl+B
@@ -42,11 +42,6 @@ Enter
 Sleep 1500ms
 Screenshot navigate.png
 Sleep 1s
-Hide
-Ctrl+]
-Type@5ms "q"
-Enter
-Show
 Type "q"
 Sleep 800ms
 Hide
@@ -70,7 +65,7 @@ Sleep 500ms
 Show
 Hide
 Ctrl+]
-Type@5ms "prefix o, release.md, Enter"
+Type@5ms "prefix o, release.md, Enter, q"
 Enter
 Show
 Ctrl+B
@@ -83,11 +78,6 @@ Sleep 1500ms
 Sleep 1s
 Screenshot open.png
 Sleep 1s
-Hide
-Ctrl+]
-Type@5ms "q"
-Enter
-Show
 Type "q"
 Sleep 1s
 Hide
