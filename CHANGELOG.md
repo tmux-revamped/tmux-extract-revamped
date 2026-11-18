@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.1.1](https://github.com/tmux-revamped/tmux-extract-revamped/compare/v3.1.0...v3.1.1) (2026-11-18)
+
+
+### Bug Fixes
+
+* stop counting some characters twice ([429225c](https://github.com/tmux-revamped/tmux-extract-revamped/commit/429225c976c2ed944ec8f338ff234299b61a8bd3))
+
 # [3.1.0](https://github.com/tmux-revamped/tmux-extract-revamped/compare/v3.0.1...v3.1.0) (2026-11-17)
 
 
