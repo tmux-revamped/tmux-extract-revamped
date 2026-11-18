@@ -6,9 +6,9 @@ source "${BATS_TEST_DIRNAME:-.}/extract_helpers.bash"
 
 @test "pick - the picked token is typed into the pane as literal text" {
   # Arrange
-  screen 'deploy https://example.com/x now'
+  screen 'deploy https://github.com/tmux-revamped/tmux-extract-revamped now'
   option mode urls
-  fzf_answers 'https://example.com/x'
+  fzf_answers 'https://github.com/tmux-revamped/tmux-extract-revamped'
 
   # Act
   lib_run extract 'extract_revamped_pick insert %1'
@@ -16,7 +16,7 @@ source "${BATS_TEST_DIRNAME:-.}/extract_helpers.bash"
   # Assert
   run grep -c '^capture-pane -p -t %1 -S -200$' "${REVAMPED_TEST_TMUX_LOG}"
   [[ "${output}" == "1" ]]
-  run grep -c '^send-keys -t %1 -l -- https://example.com/x$' "${REVAMPED_TEST_TMUX_LOG}"
+  run grep -c '^send-keys -t %1 -l -- https://github.com/tmux-revamped/tmux-extract-revamped$' "${REVAMPED_TEST_TMUX_LOG}"
   [[ "${output}" == "1" ]]
   run cat "${BATS_TEST_TMPDIR}/fzf.args"
   [[ "${output}" == "--no-sort --reverse --height=100%" ]]
@@ -69,9 +69,9 @@ source "${BATS_TEST_DIRNAME:-.}/extract_helpers.bash"
 
 @test "pick - open hands a URL to the opener" {
   # Arrange
-  screen 'see https://a.io/x'
+  screen 'see https://github.com/tmux-revamped/tmux-extract-revamped'
   option mode urls
-  fzf_answers 'https://a.io/x'
+  fzf_answers 'https://github.com/tmux-revamped/tmux-extract-revamped'
   stub_command xdg-open
 
   # Act
@@ -79,14 +79,14 @@ source "${BATS_TEST_DIRNAME:-.}/extract_helpers.bash"
 
   # Assert
   run stub_calls xdg-open
-  [[ "${output}" == "https://a.io/x" ]]
+  [[ "${output}" == "https://github.com/tmux-revamped/tmux-extract-revamped" ]]
 }
 
 @test "pick - open falls back to the macOS opener" {
   # Arrange
-  screen 'see https://a.io/y'
+  screen 'see https://github.com/tmux-revamped/tmux-extract-revamped/issues'
   option mode urls
-  fzf_answers 'https://a.io/y'
+  fzf_answers 'https://github.com/tmux-revamped/tmux-extract-revamped/issues'
   stub_command open
   harness_hide xdg-open
 
@@ -95,7 +95,7 @@ source "${BATS_TEST_DIRNAME:-.}/extract_helpers.bash"
 
   # Assert
   run stub_calls open
-  [[ "${output}" == "https://a.io/y" ]]
+  [[ "${output}" == "https://github.com/tmux-revamped/tmux-extract-revamped/issues" ]]
 }
 
 @test "pick - open sends a path to the editor in a new window at the pane's folder" {
@@ -261,9 +261,9 @@ EOF
 
 @test "choose - C-n moves to the next mode, then Enter types the pick" {
   # Arrange
-  screen 'go https://a.io/x'
-  fzf_answers '' 'ctrl-n' 'https://a.io/x' -- '' 'https://a.io/x'
-  printf '%s\n' 'ctrl-n' 'https://a.io/x' -- '' 'https://a.io/x' >"${BATS_TEST_TMPDIR}/fzf-answers"
+  screen 'go https://github.com/tmux-revamped/tmux-extract-revamped'
+  fzf_answers '' 'ctrl-n' 'https://github.com/tmux-revamped/tmux-extract-revamped' -- '' 'https://github.com/tmux-revamped/tmux-extract-revamped'
+  printf '%s\n' 'ctrl-n' 'https://github.com/tmux-revamped/tmux-extract-revamped' -- '' 'https://github.com/tmux-revamped/tmux-extract-revamped' >"${BATS_TEST_TMPDIR}/fzf-answers"
 
   # Act
   lib_run extract 'extract_revamped_pick choose %1'
@@ -272,14 +272,14 @@ EOF
   run cat "${BATS_TEST_TMPDIR}/fzf.args"
   [[ "${lines[0]}" == *"--expect=ctrl-o,ctrl-y,ctrl-e,ctrl-x,ctrl-n --header all: "* ]]
   [[ "${lines[1]}" == *"--header urls: "* ]]
-  run grep -c '^send-keys -t %1 -l -- https://a.io/x$' "${REVAMPED_TEST_TMUX_LOG}"
+  run grep -c '^send-keys -t %1 -l -- https://github.com/tmux-revamped/tmux-extract-revamped$' "${REVAMPED_TEST_TMUX_LOG}"
   [[ "${output}" == "1" ]]
 }
 
 @test "choose - C-o opens and C-y copies the pick" {
   # Arrange
-  screen 'https://a.io/x'
-  printf '%s\n' 'ctrl-o' 'https://a.io/x' -- 'ctrl-y' 'https://a.io/x' >"${BATS_TEST_TMPDIR}/fzf-answers"
+  screen 'https://github.com/tmux-revamped/tmux-extract-revamped'
+  printf '%s\n' 'ctrl-o' 'https://github.com/tmux-revamped/tmux-extract-revamped' -- 'ctrl-y' 'https://github.com/tmux-revamped/tmux-extract-revamped' >"${BATS_TEST_TMPDIR}/fzf-answers"
   fzf_answers_keep=1
   mkdir -p "${BATS_TEST_TMPDIR}/stubs"
   cp "${BATS_TEST_TMPDIR}/fzf-answers" "${BATS_TEST_TMPDIR}/answers.keep"
@@ -294,7 +294,7 @@ EOF
 
   # Assert
   run stub_calls xdg-open
-  [[ "${output}" == "https://a.io/x" ]]
+  [[ "${output}" == "https://github.com/tmux-revamped/tmux-extract-revamped" ]]
   [[ -f "${BATS_TEST_TMPDIR}/wl-copy.calls" ]]
 }
 
@@ -314,9 +314,9 @@ EOF
 
 @test "choose - the rounds are bounded when every answer changes the mode" {
   # Arrange
-  screen 'https://a.io/b'
+  screen 'https://github.com/tmux-revamped/tmux-extract-revamped/releases'
   fzf_answers x
-  awk 'BEGIN { for (i = 0; i < 20; i++) { print "ctrl-n"; print "https://a.io/b"; print "--" } }' >"${BATS_TEST_TMPDIR}/fzf-answers"
+  awk 'BEGIN { for (i = 0; i < 20; i++) { print "ctrl-n"; print "https://github.com/tmux-revamped/tmux-extract-revamped/releases"; print "--" } }' >"${BATS_TEST_TMPDIR}/fzf-answers"
 
   # Act
   lib_run extract 'extract_revamped_pick choose %1'

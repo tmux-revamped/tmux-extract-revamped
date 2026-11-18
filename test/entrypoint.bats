@@ -41,16 +41,16 @@ bats_require_minimum_version 1.5.0
   quoted=$(printf '%s' "${copy}" | sed -e "s/'/'\\\\''/g" -e 's/#/##/g')
   tmux set-environment -g PATH "${BATS_TEST_TMPDIR}/stubs:${PATH}"
   tmux run-shell "'${quoted}/extract-revamped.tmux'"
-  tmux send-keys -t "${PANE}" 'echo see https://example.com/odd' Enter
-  wait_for typed 'see https://example.com/odd'
-  answer 'https://example.com/odd'
+  tmux send-keys -t "${PANE}" 'echo see https://github.com/tmux-revamped/tmux-extract-revamped' Enter
+  wait_for typed 'see https://github.com/tmux-revamped/tmux-extract-revamped'
+  answer 'https://github.com/tmux-revamped/tmux-extract-revamped'
   attach_host
 
   # Act
   command tmux -S "${HOST}" send-keys -t host C-b M-x
 
   # Assert
-  wait_for typed $'\n$ https://example.com/odd'
+  wait_for typed $'\n$ https://github.com/tmux-revamped/tmux-extract-revamped'
 }
 
 @test "entrypoint - git tracks the entry point and the tool as executable" {
@@ -67,17 +67,17 @@ bats_require_minimum_version 1.5.0
 
 @test "insert - the picked token reaches the pane as literal text" {
   # Arrange
-  tmux send-keys -t "${PANE}" 'echo see https://example.com/x' Enter
-  wait_for typed 'see https://example.com/x'
+  tmux send-keys -t "${PANE}" 'echo see https://github.com/tmux-revamped/tmux-extract-revamped' Enter
+  wait_for typed 'see https://github.com/tmux-revamped/tmux-extract-revamped'
   tmux set-option -g @extract_revamped_mode urls
-  answer 'https://example.com/x'
+  answer 'https://github.com/tmux-revamped/tmux-extract-revamped'
 
   # Act
   tool insert "${PANE}"
 
   # Assert
   [[ "${status}" -eq 0 ]]
-  wait_for typed $'\n$ https://example.com/x'
+  wait_for typed $'\n$ https://github.com/tmux-revamped/tmux-extract-revamped'
 }
 
 @test "insert - a token that names a key is typed, never pressed" {
@@ -175,24 +175,24 @@ bats_require_minimum_version 1.5.0
   # Arrange
   tmux set-environment -g PATH "${BATS_TEST_TMPDIR}/stubs:${PATH}"
   load_plugin "${ROOT}"
-  tmux send-keys -t "${PANE}" 'echo see https://example.com/key' Enter
-  wait_for typed 'see https://example.com/key'
+  tmux send-keys -t "${PANE}" 'echo see https://github.com/tmux-revamped/tmux-extract-revamped' Enter
+  wait_for typed 'see https://github.com/tmux-revamped/tmux-extract-revamped'
   tmux set-option -g @extract_revamped_mode urls
-  answer 'https://example.com/key'
+  answer 'https://github.com/tmux-revamped/tmux-extract-revamped'
   attach_host
 
   # Act
   command tmux -S "${HOST}" send-keys -t host C-b M-x
 
   # Assert
-  wait_for typed $'\n$ https://example.com/key'
+  wait_for typed $'\n$ https://github.com/tmux-revamped/tmux-extract-revamped'
 }
 
 @test "insert - a mode given to apply on the command line reaches the picker the key opens" {
   # Arrange
   tmux set-environment -g PATH "${BATS_TEST_TMPDIR}/stubs:${PATH}"
-  tmux send-keys -t "${PANE}" 'echo see https://example.com/key' Enter
-  wait_for typed 'see https://example.com/key'
+  tmux send-keys -t "${PANE}" 'echo see https://github.com/tmux-revamped/tmux-extract-revamped' Enter
+  wait_for typed 'see https://github.com/tmux-revamped/tmux-extract-revamped'
   offered
   tool --mode urls apply
   attach_host
@@ -201,9 +201,9 @@ bats_require_minimum_version 1.5.0
   command tmux -S "${HOST}" send-keys -t host C-b M-x
 
   # Assert
-  wait_for typed $'\n$ https://example.com/key'
+  wait_for typed $'\n$ https://github.com/tmux-revamped/tmux-extract-revamped'
   run cat "${BATS_TEST_TMPDIR}/fzf.offered"
-  [[ "${output}" == "https://example.com/key" ]]
+  [[ "${output}" == "https://github.com/tmux-revamped/tmux-extract-revamped" ]]
 }
 
 @test "insert - a regex holding a hash and a quote, given on the command line, reaches the picker" {

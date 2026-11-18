@@ -52,26 +52,26 @@ bats_require_minimum_version 1.5.0
     chmod +x "${BATS_TEST_TMPDIR}/stubs/${name}"
   done
   bound_on copy_key C
-  tmux send-keys -t "${PANE}" 'echo see https://example.com/copy' Enter
-  wait_for typed 'see https://example.com/copy'
+  tmux send-keys -t "${PANE}" 'echo see https://github.com/tmux-revamped/tmux-extract-revamped' Enter
+  wait_for typed 'see https://github.com/tmux-revamped/tmux-extract-revamped'
   tmux set-option -g @extract_revamped_mode urls
-  answer 'https://example.com/copy'
+  answer 'https://github.com/tmux-revamped/tmux-extract-revamped'
   attach_host
 
   # Act
   command tmux -S "${HOST}" send-keys -t host C-b C
 
   # Assert
-  wait_for file_holds "${BATS_TEST_TMPDIR}/clipboard" 'https://example.com/copy'
+  wait_for file_holds "${BATS_TEST_TMPDIR}/clipboard" 'https://github.com/tmux-revamped/tmux-extract-revamped'
 }
 
 @test "choose - pressing its key and taking the pick with Enter types it into the pane" {
   # Arrange
   bound_on chooser_key H
-  tmux send-keys -t "${PANE}" 'echo see https://example.com/choose' Enter
-  wait_for typed 'see https://example.com/choose'
+  tmux send-keys -t "${PANE}" 'echo see https://github.com/tmux-revamped/tmux-extract-revamped' Enter
+  wait_for typed 'see https://github.com/tmux-revamped/tmux-extract-revamped'
   tmux set-option -g @extract_revamped_mode urls
-  printf '\n%s\n' 'https://example.com/choose' >"${BATS_TEST_TMPDIR}/fzf.answer"
+  printf '\n%s\n' 'https://github.com/tmux-revamped/tmux-extract-revamped' >"${BATS_TEST_TMPDIR}/fzf.answer"
   printf '#!/bin/sh\ncat >/dev/null\ncat "%s"\n' "${BATS_TEST_TMPDIR}/fzf.answer" >"${BATS_TEST_TMPDIR}/stubs/fzf"
   chmod +x "${BATS_TEST_TMPDIR}/stubs/fzf"
   attach_host
@@ -80,7 +80,7 @@ bats_require_minimum_version 1.5.0
   command tmux -S "${HOST}" send-keys -t host C-b H
 
   # Assert
-  wait_for typed $'\n$ https://example.com/choose'
+  wait_for typed $'\n$ https://github.com/tmux-revamped/tmux-extract-revamped'
 }
 
 @test "doctor - pressing its key shows the dependency rows in a popup until Enter closes it" {
@@ -163,17 +163,17 @@ bats_require_minimum_version 1.5.0
   tmux set-option -g @extract_revamped_picker hints
   tmux set-option -g @extract_revamped_mode urls
   bound_on key X
-  tmux send-keys -t "${PANE}" 'clear; echo go https://example.com/hint' Enter
-  wait_for typed 'go https://example.com/hint'
+  tmux send-keys -t "${PANE}" 'clear; echo go https://github.com/tmux-revamped/tmux-extract-revamped' Enter
+  wait_for typed 'go https://github.com/tmux-revamped/tmux-extract-revamped'
   attach_host
   command tmux -S "${HOST}" send-keys -t host C-b X
-  wait_for host_shows 'go attps://example.com/hint'
+  wait_for host_shows 'go attps://github.com/tmux-revamped/tmux-extract-revamped'
 
   # Act
   command tmux -S "${HOST}" send-keys -t host a
 
   # Assert
-  wait_for typed '$ https://example.com/hint'
+  wait_for typed '$ https://github.com/tmux-revamped/tmux-extract-revamped'
 }
 
 @test "hints - the overlay covers exactly the pane it was opened on" {
@@ -183,16 +183,16 @@ bats_require_minimum_version 1.5.0
   tmux set-option -g @extract_revamped_mode urls
   bound_on key X
   second=$(tmux split-window -h -P -F '#{pane_id}' -t "${PANE}" "env -i PATH='${PATH}' HOME='${BATS_TEST_TMPDIR}/home' PS1='$ ' TERM=xterm sh")
-  tmux send-keys -t "${second}" 'clear; echo right https://example.com/r' Enter
-  tmux send-keys -t "${PANE}" 'clear; echo left https://example.com/l' Enter
+  tmux send-keys -t "${second}" 'clear; echo right https://github.com/tmux/tmux' Enter
+  tmux send-keys -t "${PANE}" 'clear; echo left https://github.com/tmux-revamped' Enter
   tmux select-pane -t "${second}"
   attach_host
-  wait_for host_shows 'right https://example.com/r'
+  wait_for host_shows 'right https://github.com/tmux/tmux'
 
   # Act
   command tmux -S "${HOST}" send-keys -t host C-b X
 
   # Assert
-  wait_for host_shows 'right attps://example.com/r'
-  host_shows 'left https://example.com/l'
+  wait_for host_shows 'right attps://github.com/tmux/tmux'
+  host_shows 'left https://github.com/tmux-revamped'
 }

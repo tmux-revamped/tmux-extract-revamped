@@ -76,13 +76,13 @@ R  old.sh -> new.sh
 
 @test "patterns - markdown gives the target of each link and nothing for plain brackets" {
   # Arrange
-  local text='See [the docs](https://example.com/docs) and [local](./README.md), not (plain) or [x] (y).'
+  local text='See [the docs](https://github.com/tmux-revamped/tmux-extract-revamped) and [local](./README.md), not (plain) or [x] (y).'
 
   # Act
   extract markdown "${text}"
 
   # Assert
-  [[ "${output}" == $'https://example.com/docs\n./README.md' ]]
+  [[ "${output}" == $'https://github.com/tmux-revamped/tmux-extract-revamped\n./README.md' ]]
 }
 
 @test "patterns - branches come from git status, git branch and the decorations of git log" {

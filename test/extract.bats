@@ -6,24 +6,24 @@ source "${BATS_TEST_DIRNAME:-.}/extract_helpers.bash"
 
 @test "extract - a URL loses its trailing punctuation and repeats" {
   # Arrange
-  local text='see https://example.com/a?b=1, and (https://example.com/a?b=1).'
+  local text='see https://github.com/tmux-revamped/tmux-extract-revamped/issues?q=1, and (https://github.com/tmux-revamped/tmux-extract-revamped/issues?q=1).'
 
   # Act
   extract urls "${text}"
 
   # Assert
-  [[ "${output}" == "https://example.com/a?b=1" ]]
+  [[ "${output}" == "https://github.com/tmux-revamped/tmux-extract-revamped/issues?q=1" ]]
 }
 
 @test "extract - an email counts as a URL" {
   # Arrange
-  local text='mail ops@example.org or ops@example.org'
+  local text='mail noreply@github.com or noreply@github.com'
 
   # Act
   extract urls "${text}"
 
   # Assert
-  [[ "${output}" == "ops@example.org" ]]
+  [[ "${output}" == "noreply@github.com" ]]
 }
 
 @test "extract - paths are absolute, home, relative and bare with a slash" {
@@ -161,13 +161,13 @@ source "${BATS_TEST_DIRNAME:-.}/extract_helpers.bash"
 
 @test "extract - all joins URLs, paths and words without repeats" {
   # Arrange
-  local text='go to https://a.io/x and /tmp/y'
+  local text='go to https://github.com/tmux-revamped/tmux-extract-revamped and /tmp/y'
 
   # Act
   extract all "${text}"
 
   # Assert
-  [[ "${output}" == $'https://a.io/x\n//a.io/x\n/tmp/y\ngo\nto\nand' ]]
+  [[ "${output}" == $'https://github.com/tmux-revamped/tmux-extract-revamped\n//github.com/tmux-revamped/tmux-extract-revamped\n/tmp/y\ngo\nto\nand' ]]
 }
 
 @test "extract - every mode name routes, the synonyms included" {
@@ -230,7 +230,7 @@ source "${BATS_TEST_DIRNAME:-.}/extract_helpers.bash"
 
 @test "extract - a token is classified as URL, path or other" {
   # Arrange
-  local script='for t in https://a.com ftp://a.com file:///x /etc/hosts "~/x" ./a ../b user@host.com git@github.com:owner/repo.git a/b@c.d:1 src/app.ts justaword; do printf "%s " "$(extract_revamped_classify "$t")"; done'
+  local script='for t in https://github.com ftp://ftp.gnu.org file:///x /etc/hosts "~/x" ./a ../b noreply@github.com git@github.com:tmux-revamped/tmux-extract-revamped.git a/b@c.d:1 src/app.ts justaword; do printf "%s " "$(extract_revamped_classify "$t")"; done'
 
   # Act
   lib_run extract "${script}"

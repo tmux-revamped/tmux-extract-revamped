@@ -20,17 +20,17 @@ plan_lines() {
 
 @test "hints - each token on the screen gets a letter in reading order, drawn over its first character" {
   # Arrange
-  local screen=$'see lib/a.sh\nand https://a.io/x here'
+  local screen=$'see lib/a.sh\nand https://github.com/tmux-revamped/tmux-extract-revamped here'
   export NO_COLOR=1
 
   # Act
-  hints_for "${screen}" $'https://a.io/x\nlib/a.sh'
+  hints_for "${screen}" $'https://github.com/tmux-revamped/tmux-extract-revamped\nlib/a.sh'
 
   # Assert
   [[ "${lines[0]}" == $'M\ta\tlib/a.sh' ]] || false
-  [[ "${lines[1]}" == $'M\ts\thttps://a.io/x' ]] || false
+  [[ "${lines[1]}" == $'M\ts\thttps://github.com/tmux-revamped/tmux-extract-revamped' ]] || false
   [[ "${lines[2]}" == $'S\tsee \e[7ma\e[0m\e[1mib/a.sh\e[0m' ]] || false
-  [[ "${lines[3]}" == $'S\tand \e[7ms\e[0m\e[1mttps://a.io/x\e[0m here' ]] || false
+  [[ "${lines[3]}" == $'S\tand \e[7ms\e[0m\e[1mttps://github.com/tmux-revamped/tmux-extract-revamped\e[0m here' ]] || false
   [[ "${#lines[@]}" -eq 4 ]]
 }
 
@@ -95,7 +95,7 @@ plan_lines() {
 
 @test "hints - typing a token's letter types that token into the pane" {
   # Arrange
-  screen 'see lib/a.sh and https://a.io/x'
+  screen 'see lib/a.sh and https://github.com/tmux-revamped/tmux-extract-revamped'
   option mode urls
   export NO_COLOR=1
 
@@ -104,8 +104,8 @@ plan_lines() {
 
   # Assert
   untraced
-  [[ "${output}" == $'\e[?25l\e[H\e[2Jsee lib/a.sh and \e[7ma\e[0m\e[1mttps://a.io/x\e[0m' ]] || false
-  run grep -c '^send-keys -t %1 -l -- https://a.io/x$' "${REVAMPED_TEST_TMUX_LOG}"
+  [[ "${output}" == $'\e[?25l\e[H\e[2Jsee lib/a.sh and \e[7ma\e[0m\e[1mttps://github.com/tmux-revamped/tmux-extract-revamped\e[0m' ]] || false
+  run grep -c '^send-keys -t %1 -l -- https://github.com/tmux-revamped/tmux-extract-revamped$' "${REVAMPED_TEST_TMUX_LOG}"
   [[ "${output}" == "1" ]]
 }
 
@@ -126,7 +126,7 @@ plan_lines() {
 
 @test "hints - any other key, or no token on the screen, picks nothing" {
   # Arrange
-  screen 'see https://a.io/x'
+  screen 'see https://github.com/tmux-revamped/tmux-extract-revamped'
   option mode urls
 
   # Act
@@ -153,15 +153,15 @@ plan_lines() {
 
 @test "hints - the chooser keeps fzf" {
   # Arrange
-  screen 'see https://a.io/x'
+  screen 'see https://github.com/tmux-revamped/tmux-extract-revamped'
   option mode urls
-  fzf_answers '' 'https://a.io/x'
+  fzf_answers '' 'https://github.com/tmux-revamped/tmux-extract-revamped'
 
   # Act
   hint_pick a choose
 
   # Assert
-  run grep -c '^send-keys -t %1 -l -- https://a.io/x$' "${REVAMPED_TEST_TMUX_LOG}"
+  run grep -c '^send-keys -t %1 -l -- https://github.com/tmux-revamped/tmux-extract-revamped$' "${REVAMPED_TEST_TMUX_LOG}"
   [[ "${output}" == "1" ]]
 }
 
