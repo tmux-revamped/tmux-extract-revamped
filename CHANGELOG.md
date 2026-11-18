@@ -69,7 +69,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Opening a path passes it to the editor as one argument instead of a shell
   string, so spaces and shell syntax in a picked token stay literal, and a
   relative path opens from the source pane's directory.
-- An scp-like git remote such as `git@github.com:o/r.git` is no longer
+- An scp-like git remote such as `git@github.com:tmux-revamped/tmux-extract-revamped.git` is no longer
   classified as a URL, so the open action pastes it instead of handing it to
   the browser.
 
