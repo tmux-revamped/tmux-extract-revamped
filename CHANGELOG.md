@@ -1,5 +1,19 @@
 # Changelog
 
+# [3.2.0](https://github.com/tmux-revamped/tmux-extract-revamped/compare/v3.1.1...v3.2.0) (2026-11-19)
+
+
+### Bug Fixes
+
+* fold a table wider than the terminal ([ac1aa54](https://github.com/tmux-revamped/tmux-extract-revamped/commit/ac1aa54efd558703d692ac7d92b43dd557e1b784))
+* read the grep of macOS as bsd in doctor ([5064226](https://github.com/tmux-revamped/tmux-extract-revamped/commit/50642264059c301862e4cb62459bb5ed3f4405ca))
+* stop a recording that hangs ([82e3fea](https://github.com/tmux-revamped/tmux-extract-revamped/commit/82e3fead8dff91f97cb9fdaf9b0a3828719c7cb5))
+
+
+### Features
+
+* name unknown setting values in doctor ([a7d3476](https://github.com/tmux-revamped/tmux-extract-revamped/commit/a7d3476538543de5e54d344e24d02e012bedcf41))
+
 ## [3.1.1](https://github.com/tmux-revamped/tmux-extract-revamped/compare/v3.1.0...v3.1.1) (2026-11-18)
 
 
