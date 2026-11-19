@@ -39,10 +39,14 @@ extract_revamped_resolve() {
   '
 }
 
+extract_revamped_setting_rows() {
+  extract_revamped_setting_rows_format=$(extract_revamped_format)
+  extract_revamped_setting_rows_live=$(tmux display-message -p "${extract_revamped_setting_rows_format}" 2>/dev/null) || extract_revamped_setting_rows_live=""
+  extract_revamped_resolve "${extract_revamped_setting_rows_live}"
+}
+
 extract_revamped_load() {
-  extract_revamped_load_format=$(extract_revamped_format)
-  extract_revamped_load_live=$(tmux display-message -p "${extract_revamped_load_format}" 2>/dev/null) || extract_revamped_load_live=""
-  extract_revamped_load_values=$(extract_revamped_resolve "${extract_revamped_load_live}")
+  extract_revamped_load_values=$(extract_revamped_setting_rows)
   while IFS='	' read -r extract_revamped_load_name extract_revamped_load_value; do
     IFS= read -r "EXTRACT_REVAMPED_S_${extract_revamped_load_name}" <<EOF
 ${extract_revamped_load_value}

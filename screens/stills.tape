@@ -35,7 +35,7 @@ Enter
 Show
 Ctrl+B
 Type@1ms "n"
-Sleep 2s
+Sleep 5s
 Type "7d3f"
 Sleep 800ms
 Enter
@@ -70,7 +70,7 @@ Enter
 Show
 Ctrl+B
 Type@1ms "o"
-Sleep 2s
+Sleep 5s
 Type "release.md"
 Sleep 800ms
 Enter
@@ -95,7 +95,7 @@ Show
 Enter
 Sleep 1500ms
 Hide
-Type "clear; cat build.log"
+Type "printf '' | pbcopy; clear; cat build.log"
 Enter
 Sleep 500ms
 Show
@@ -106,7 +106,7 @@ Enter
 Show
 Ctrl+B
 Type@1ms "y"
-Sleep 2s
+Sleep 5s
 Type "v2.4"
 Sleep 800ms
 Enter
@@ -153,7 +153,7 @@ Enter
 Show
 Ctrl+B
 Type@1ms "c"
-Sleep 2s
+Sleep 5s
 Ctrl+N
 Sleep 1500ms
 Screenshot chooser.png
@@ -269,7 +269,7 @@ Enter
 Show
 Ctrl+B
 Type@1ms "E"
-Sleep 2s
+Sleep 5s
 Type "README"
 Sleep 800ms
 Enter
@@ -285,7 +285,7 @@ Enter
 Show
 Ctrl+B
 Type@1ms "R"
-Sleep 2s
+Sleep 5s
 Type "handler"
 Sleep 800ms
 Enter

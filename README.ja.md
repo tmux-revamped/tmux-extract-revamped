@@ -114,7 +114,7 @@ run-shell ~/.tmux/plugins/tmux-extract-revamped/extract-revamped.tmux
 | `@extract_revamped_popup_width` | `80%` | ポップアップの幅 |
 | `@extract_revamped_popup_height` | `60%` | ポップアップの高さ |
 
-tmux オプションで指定した設定はキーを実行したときに読むので、変更は次の選択から有効になります。`extract-revamped apply` にコマンドラインまたは環境変数で渡した設定は、割り当てたキーに引き継がれます。キーそのものは `extract-revamped apply` か設定の再読み込みで有効になります。どのオプションも、ダッシュ区切りのコマンドオプション（例 `--min-length 4`）と環境変数（例 `EXTRACT_REVAMPED_MIN_LENGTH`）で指定できます。優先順位はコマンドライン、環境変数、tmux オプションの順です。空の tmux オプションは既定値を意味します。
+tmux オプションで指定した設定はキーを実行したときに読むので、変更は次の選択から有効になります。`extract-revamped apply` にコマンドラインまたは環境変数で渡した設定は、割り当てたキーに引き継がれます。キーそのものは `extract-revamped apply` か設定の再読み込みで有効になります。どのオプションも、ダッシュ区切りのコマンドオプション（例 `--min-length 4`）と環境変数（例 `EXTRACT_REVAMPED_MIN_LENGTH`）で指定できます。優先順位はコマンドライン、環境変数、tmux オプションの順です。空の tmux オプションは既定値を意味します。`doctor` は、プラグインが認識できない値を持つ設定の名前を表示します。
 
 <a id="モード"></a>
 

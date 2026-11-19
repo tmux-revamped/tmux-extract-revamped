@@ -65,3 +65,12 @@ EXTRACT_REVAMPED_TOOL=""
 EXTRACT_REVAMPED_CARRIED=""
 EXTRACT_REVAMPED_TAKEN=""
 REVAMPED_LOG_NS=extract-revamped
+EXTRACT_REVAMPED_KINDS='picker	fzf hints
+mode	all urls paths words lines shas ipv4 ipv6 color colors hex uuid uuids numbers nums quoted bracketed docker kubernetes git-status diff markdown branches custom
+scope	pane all-panes last-log
+min_length	number
+lines	number
+reverse	1 0
+multi	1 0
+osc52	1 0
+frecency	1 0'

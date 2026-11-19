@@ -149,6 +149,12 @@ extract_revamped_doctor_optional() {
   revamped_doctor_line "$1" warn "$3"
 }
 
+extract_revamped_doctor_settings() {
+  extract_revamped_doctor_settings_rows=$(extract_revamped_setting_rows)
+  # shellcheck disable=SC2154
+  revamped_doctor_settings "${EXTRACT_REVAMPED_KINDS}" "${extract_revamped_doctor_settings_rows}"
+}
+
 extract_revamped_doctor() {
   revamped_doctor_tmux
   revamped_doctor_required fzf "brew install fzf, or apt install fzf"
@@ -160,6 +166,7 @@ extract_revamped_doctor() {
   extract_revamped_doctor_optional base64 "${extract_revamped_doctor_base64}" "OSC 52 copies need base64"
   extract_revamped_plan
   [ -z "${EXTRACT_REVAMPED_TAKEN}" ] || revamped_doctor_line "prefix ${EXTRACT_REVAMPED_TAKEN}" warn "already bound, so the picker has no key; set @extract_revamped_key"
+  extract_revamped_doctor_settings
   revamped_doctor_gum
   revamped_doctor_core_tools awk sed grep tr
   revamped_doctor_finish

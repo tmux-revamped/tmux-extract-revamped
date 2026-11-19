@@ -4,6 +4,7 @@ fzf                ok       <path>
 opener             warn     open needs xdg-open or open
 clipboard          warn     copy needs pbcopy, wl-copy, xclip or xsel, or @extract_revamped_osc52
 base64             ok       <path>
+settings           ok       every option holds a value it knows
 gum                ok       <path>
 awk                ok       <path>, <flavor>
 sed                ok       <path>, <flavor>

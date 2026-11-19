@@ -114,7 +114,7 @@ run-shell ~/.tmux/plugins/tmux-extract-revamped/extract-revamped.tmux
 | `@extract_revamped_popup_width` | `80%` | Popup width |
 | `@extract_revamped_popup_height` | `60%` | Popup height |
 
-A setting given as a tmux option is read when a key runs, so a change takes effect on the next pick, and one given to `extract-revamped apply` on the command line or in the environment rides on the keys it binds; the keys themselves take effect after `extract-revamped apply` or a config reload. Every option is also a command option with dashes, such as `--min-length 4`, and an environment variable, such as `EXTRACT_REVAMPED_MIN_LENGTH`; the command line wins over the environment, and the environment over the tmux option. An empty tmux option means its default.
+A setting given as a tmux option is read when a key runs, so a change takes effect on the next pick, and one given to `extract-revamped apply` on the command line or in the environment rides on the keys it binds; the keys themselves take effect after `extract-revamped apply` or a config reload. Every option is also a command option with dashes, such as `--min-length 4`, and an environment variable, such as `EXTRACT_REVAMPED_MIN_LENGTH`; the command line wins over the environment, and the environment over the tmux option. An empty tmux option means its default. `doctor` names any setting that holds a value the plugin does not know.
 
 <a id="modes"></a>
 

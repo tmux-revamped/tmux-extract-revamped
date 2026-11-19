@@ -114,7 +114,7 @@ run-shell ~/.tmux/plugins/tmux-extract-revamped/extract-revamped.tmux
 | `@extract_revamped_popup_width` | `80%` | 彈出視窗寬度 |
 | `@extract_revamped_popup_height` | `60%` | 彈出視窗高度 |
 
-以 tmux 選項給出的設定在按鍵執行時讀取，所以修改由下一次選取起生效；透過命令列或環境變數傳給 `extract-revamped apply` 的設定會帶到它綁定的按鍵上；按鍵本身在 `extract-revamped apply` 或重新載入設定後生效。每個選項亦可寫成以短橫線連接的命令選項，例如 `--min-length 4`，以及環境變數，例如 `EXTRACT_REVAMPED_MIN_LENGTH`；命令列優先於環境變數，環境變數優先於 tmux 選項。空的 tmux 選項表示使用預設值。
+以 tmux 選項給出的設定在按鍵執行時讀取，所以修改由下一次選取起生效；透過命令列或環境變數傳給 `extract-revamped apply` 的設定會帶到它綁定的按鍵上；按鍵本身在 `extract-revamped apply` 或重新載入設定後生效。每個選項亦可寫成以短橫線連接的命令選項，例如 `--min-length 4`，以及環境變數，例如 `EXTRACT_REVAMPED_MIN_LENGTH`；命令列優先於環境變數，環境變數優先於 tmux 選項。空的 tmux 選項表示使用預設值。`doctor` 會指出數值無法識別的設定。
 
 <a id="模式"></a>
 
